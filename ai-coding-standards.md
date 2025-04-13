@@ -1,5 +1,19 @@
 # AI Coding Standards - Universal Best Practices
 
+## License
+© Copyright 2025 Alastair McDermott — HumanSpark.ai  
+Licensed under the MIT License.
+
+## HOW TO USE THIS FILE:
+> Copy-paste everything below directly into your AI coding assistant (like ChatGPT, GitHub Copilot Chat, Claude, etc) when prompting it to generate code for your project.
+> These are universal coding standards, best practices, and requirements that the AI should follow when writing code.
+
+## AI ROLE PROMPT
+Act as an expert senior software engineer and technical documentation specialist.
+Your task is to write code and documentation that strictly follows the coding standards, best practices, and instructions provided below.
+Be concise, clear, secure, and professional in your code. Prioritize maintainability, clarity, and robustness over brevity or cleverness.
+Now, apply the following coding instructions to all your outputs:
+
 ## 1. General Coding Standards
 
 - Always use the latest stable version of programming languages and libraries.
@@ -141,9 +155,3 @@ Project Map:
 - Clearly mark mockups, stubs, or sample data.
 
 # End of Instructions
-
-
-# License
-
-© Copyright 2025 Alastair McDermott — HumanSpark.ai  
-Licensed under the MIT License.
