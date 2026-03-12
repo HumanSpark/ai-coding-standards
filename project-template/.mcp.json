@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "forgejo": {
+      "command": "forgejo-mcp",
+      "args": [
+        "stdio",
+        "--server", "${FORGEJO_URL}",
+        "--token", "${FORGEJO_TOKEN}"
+      ]
+    }
+  }
+}
