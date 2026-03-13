@@ -51,6 +51,63 @@ This checklist captures what YOU do - the decisions, habits, and discipline that
 
 ---
 
+## When Creating a New Module
+
+- [ ] **Does this need modular structure?** More than 3 source files with
+  distinct responsibilities? Re-explained context to CC more than twice?
+  If no, flat layout is fine. (Rule 12.5)
+- [ ] **What role does this module play?** Client, processor, storage, output,
+  or entrypoint? If you can't pick one, the module is doing too much. (Rule 12.6)
+- [ ] **If it's a processor - does it have any I/O?** Processors must be pure:
+  dataclasses in, dataclasses out. No network, no filesystem, no database.
+  If it needs I/O, it's a client or storage module. (Rules 12.6, 12.7)
+- [ ] **Create the module README first.** Copy from `docs/MODULE-README-TEMPLATE.md`.
+  Fill in purpose (including what it does NOT do), public interface, dependencies,
+  known issues, testing. Commit this before the implementation. (Rules 12.1, 3.4)
+- [ ] **Define types in models.py.** What data structures flow in and out?
+  Add frozen dataclasses before writing the implementation. If the processor
+  enriches data, define a new output type. (Rules 12.3, 12.7)
+- [ ] **Add config section if needed.** New tuneable values go in config.py as a
+  frozen dataclass. The module receives its section, not the full config. (Rule 12.4)
+- [ ] **Write __init__.py with __all__.** Explicit public API. (Rule 12.2)
+- [ ] **Add logger.** `logger = logging.getLogger(__name__)` after imports.
+  Do not configure logging - entrypoint handles that. (Rule 12.10)
+- [ ] **Define exception types** if callers need to handle errors. (Rule 12.8)
+- [ ] **Write tests against the public interface.** Not internals. Use fixtures
+  for external data. Processor tests should need zero mocks. (Rule 12.6)
+- [ ] **Update CLAUDE.md** key files table and architecture section. (Rule 7.4)
+- [ ] **Add Makefile target** if missing: `make test-module MOD=name`.
+
+## When Wrapping a New External Service
+
+- [ ] **One client per service.** Even if it's 40 lines. (Rule 12.9)
+- [ ] **Capture a real response fixture.** `curl -sL -o tests/fixtures/{service}_{scenario}.{ext} "URL"` (Rule 12.9)
+- [ ] **Client returns frozen dataclasses, not raw responses.** Callers never
+  see requests.Response, BeautifulSoup, or JSON dicts. (Rule 12.9)
+- [ ] **Wrap library exceptions.** `requests.RequestException` becomes
+  `ServiceNameError`. Include the resource ID in the message. (Rule 12.8)
+
+## When Refactoring Toward Modules (Migration)
+
+- [ ] **Identify the seams.** List distinct responsibilities in the current code.
+  Classify each as client, processor, storage, or output. Do this on paper
+  first, not in code.
+- [ ] **Extract models.py first.** Find every data structure flowing between
+  responsibilities. This is the highest-value single change. (Rule 12.3)
+- [ ] **One module per session.** Pick the module with fewest dependencies on
+  other parts. Extract it fully (README, __init__.py, core.py, tests) before
+  starting the next.
+- [ ] **Extract processors before clients.** Processors have no I/O, so they're
+  easier to extract cleanly. Once processors are out, the remaining code is
+  mostly I/O and wiring.
+- [ ] **Add config.py after 2-3 modules.** The configuration pattern becomes
+  clear once you've extracted a few modules. (Rule 12.4)
+- [ ] **Verify the pipeline is readable in one place.** After extraction, the
+  entrypoint (cli.py) should show the full pipeline sequence without needing
+  to read any module's internals. (Rule 12.7)
+
+---
+
 ## When Deploying / Transferring Files
 
 - [ ] **Specify machine and user.** Always note which machine and which user when writing commands. (Rule 9.1)

@@ -18,13 +18,19 @@ humanspark-standards/
 │   ├── CLAUDE.md                - Project context template (Stage 4)
 │   ├── HANDOFF.md               - Session handoff template
 │   ├── .mcp.json                - Forgejo MCP server config
+│   ├── docs/
+│   │   └── MODULE-README-TEMPLATE.md  - Module contract template
+│   ├── src/
+│   │   ├── models.py            - Starter shared types template
+│   │   └── config.py            - Starter typed config template
 │   └── .claude/
 │       ├── settings.json        - Hooks (py_compile on Python edits)
 │       ├── skills/
 │       │   ├── testing-patterns/SKILL.md
 │       │   ├── security-hardening/SKILL.md
 │       │   ├── prompt-engineering/SKILL.md
-│       │   └── agent-memory/SKILL.md
+│       │   ├── agent-memory/SKILL.md
+│       │   └── modular-design/SKILL.md
 │       └── agents/
 │           └── code-reviewer.md
 │
@@ -79,7 +85,7 @@ Or download from: https://github.com/raohwork/forgejo-mcp/releases
 ## What Each Component Does
 
 ### User-Level: `~/.claude/CLAUDE.md`
-Universal AI instructions (143 lines). Covers: role, git conventions, file headers, code style, placeholders, security, testing, project structure, CLAUDE.md maintenance, writing style, and a "do not" list.
+Universal AI instructions. Covers: role, git conventions, file headers, code style, module design, placeholders, security, testing, project structure, CLAUDE.md maintenance, writing style, and a "do not" list.
 
 ### Project Template: `CLAUDE.md`
 Stage 4 template with: design philosophy (strict vs free-to-adapt), evolution history (append-only changelog), build/run commands, testing, architecture, key files, security boundaries, key patterns, gotchas, git conventions.
@@ -102,6 +108,8 @@ Forgejo/Gitea MCP server in stdio mode. Gives Claude Code native access to repos
 **prompt-engineering:** System prompt conventions, `.format()` template rules, boundary markers, context poisoning prevention, prompt reliability testing.
 
 **agent-memory:** Pre-emptive state serialisation, HANDOFF.md bookmark pattern, selective context loading, entity file decomposition. For any project with long-running agents or multi-session work.
+
+**modular-design:** Module boundary patterns, standard module roles (client, processor, storage, output), data flow pipeline, typed interfaces, CC-efficient structure.
 
 ### Agents
 
