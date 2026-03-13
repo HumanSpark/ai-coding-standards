@@ -2,6 +2,11 @@
 
 A git-managed system of coding standards, AI instructions, project templates, and reference documents for all HumanSpark projects.
 
+**This repo contains three different CLAUDE.md files - don't confuse them:**
+- **`/CLAUDE.md`** (this file) - Context for working on this standards repo itself
+- **`user-level/CLAUDE.md`** - Universal AI instructions, deployed to `~/.claude/CLAUDE.md` for all projects
+- **`project-template/CLAUDE.md`** - Stage 4 template copied into new projects via `setup.sh`
+
 ## Design Philosophy
 
 This system captures how we actually work, not how we aspire to work. Every rule is traceable to evidence from real projects.
