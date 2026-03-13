@@ -43,7 +43,7 @@ humanspark-standards/
 
 Three layers, two audiences:
 
-**User-level** (`~/.claude/CLAUDE.md`) loads on every Claude Code session, every project. Contains universal rules: commit conventions, file headers, code style, testing discipline, security principles, writing style.
+**User-level** (`~/.claude/CLAUDE.md`) loads on every Claude Code session, every project. Contains universal rules: commit conventions, file headers, code style, module design patterns, testing discipline, security principles, writing style.
 
 **Project-level** (`CLAUDE.md` + `.claude/`) contains what's unique to each project: design philosophy, evolution history, architecture, key files, security boundaries, gotchas. Plus hooks for automated quality gates, skills for domain knowledge, MCP for external tool integration, and HANDOFF.md for session continuity.
 

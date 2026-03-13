@@ -13,6 +13,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 ## How It Evolved
 
 1. **Genesis (2026-03-12):** Derived from git archaeology across 7 repos (960+ commits), CLAUDE.md evolution analysis (52+ edits across 6 projects), and analysis of Luna/OpenClaw memory architecture and Hay/Kelder prompting patterns.
+2. **Modular Design Patterns (2026-03-13):** Added Section 12 (Rules 12.1-12.10) covering module structure, standard roles, data flow pipeline, error handling, client conventions, and logging. New skill, templates (MODULE-README-TEMPLATE, models.py, config.py), three checklist sections. Thinned user-level Security/Testing sections (~215 tokens saved per session). Evidence: 9 repos, 1000+ commits.
 
 ## Build & Run
 
@@ -35,7 +36,11 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 | project-template/HANDOFF.md | Session handoff template for multi-session work |
 | project-template/.claude/settings.json | py_compile hook on Python edits |
 | project-template/.mcp.json | Forgejo MCP server config |
-| reference/humanspark-engineering-standards-v1.md | Master doc with evidence |
+| project-template/.claude/skills/modular-design/SKILL.md | Module boundary patterns and conventions |
+| project-template/docs/MODULE-README-TEMPLATE.md | Module contract template |
+| project-template/src/models.py | Starter shared types template |
+| project-template/src/config.py | Starter typed config template |
+| reference/humanspark-engineering-standards-v1.md | Master doc with evidence (Sections 1-12) |
 | reference/humanspark-human-checklist.md | Human workflow checklist |
 
 ## Git Conventions
