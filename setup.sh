@@ -123,6 +123,45 @@ if [ -n "${1:-}" ]; then
         echo "   Exists:  CLAUDE.md (skipped)"
     fi
 
+    # Copy docs directory templates
+    mkdir -p "$TARGET/docs"
+    if [ ! -f "$TARGET/docs/MODULE-README-TEMPLATE.md" ]; then
+        cp "$SCRIPT_DIR/project-template/docs/MODULE-README-TEMPLATE.md" "$TARGET/docs/MODULE-README-TEMPLATE.md"
+        echo "   Created: docs/MODULE-README-TEMPLATE.md"
+    else
+        echo "   Exists:  docs/MODULE-README-TEMPLATE.md (skipped)"
+    fi
+
+    # Copy starter source templates (only if src/ exists or is being created)
+    # These are reference files - the developer renames projectname/ to match
+    # their actual project and fills in the TODO sections.
+    if [ -d "$TARGET/src" ]; then
+        if [ ! -f "$TARGET/src/models.py" ]; then
+            # Only deploy to src/ root if no models.py exists anywhere in src/
+            if ! find "$TARGET/src" -name "models.py" -print -quit 2>/dev/null | grep -q .; then
+                cp "$SCRIPT_DIR/project-template/src/models.py" "$TARGET/src/models.py"
+                echo "   Created: src/models.py (starter template)"
+            else
+                echo "   Exists:  models.py found in src/ tree (skipped)"
+            fi
+        else
+            echo "   Exists:  src/models.py (skipped)"
+        fi
+        if [ ! -f "$TARGET/src/config.py" ]; then
+            if ! find "$TARGET/src" -name "config.py" -print -quit 2>/dev/null | grep -q .; then
+                cp "$SCRIPT_DIR/project-template/src/config.py" "$TARGET/src/config.py"
+                echo "   Created: src/config.py (starter template)"
+            else
+                echo "   Exists:  config.py found in src/ tree (skipped)"
+            fi
+        else
+            echo "   Exists:  src/config.py (skipped)"
+        fi
+    else
+        echo "   Note:    No src/ directory - skipping models.py and config.py templates"
+        echo "            Create src/ and re-run to deploy, or copy from project-template/src/"
+    fi
+
     echo ""
     echo "   Project initialised. Review and fill in CLAUDE.md template."
 else

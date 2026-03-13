@@ -39,11 +39,21 @@ Key flow: **{step -> step -> step}**
 
 {Brief description of data flow or processing pipeline}
 
+**Module contracts:** Each module's `README.md` describes its purpose, public
+interface, dependencies, and known issues. See `docs/MODULE-README-TEMPLATE.md`
+for the format.
+
+**Shared types:** `src/projectname/models.py` defines the data structures that
+flow between modules. `src/projectname/config.py` defines typed configuration.
+
 ## Key Files
 
 | File | What it does |
 |------|-------------|
 | {file} | {one-line description} |
+| docs/MODULE-README-TEMPLATE.md | Template for module contract READMEs |
+| src/{projectname}/models.py | Shared data structures (frozen dataclasses) |
+| src/{projectname}/config.py | Typed configuration with from_env() |
 
 ## Security Boundaries
 

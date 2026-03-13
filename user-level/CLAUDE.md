@@ -48,6 +48,28 @@ Every code file. Adapt comment syntax per language.
 
 ---
 
+## Module Design
+
+For projects with 3+ source files and distinct responsibilities, apply modular
+structure. Full conventions in `.claude/skills/modular-design/SKILL.md`.
+
+**Five roles** (put code in the right place):
+- **Client** (`{service}_client.py`): Wraps one external service. All I/O lives here.
+- **Processor** (`{concern}.py`): Pure logic. No I/O. Dataclasses in, dataclasses out.
+- **Storage** (`db.py`): Persistence. Accepts/returns frozen dataclasses.
+- **Output** (`{type}_writer.py`): Generates deliverables.
+- **Entrypoint** (`cli.py`): Thin orchestrator. Only file importing multiple modules.
+
+**Three hard rules:**
+1. Processors have no I/O. If a test needs a mock, code is in the wrong layer.
+2. Pydantic at the edge only (in clients). Frozen dataclasses everywhere else.
+3. Modules raise exceptions. Entrypoint catches and decides.
+
+**Logging:** `logger = logging.getLogger(__name__)` in every module.
+`basicConfig()` in entrypoint only. No `print()` in modules.
+
+---
+
 ## Placeholders
 
 Mark ALL stubs, incomplete implementations, and mock data with `TODO:` comments. Mandatory.
@@ -64,31 +86,26 @@ Distinguish `TODO:` (needs doing) from `NOTE:` (informational).
 
 ## Security
 
-- **Sanitisation first:** Write the sanitisation layer before the feature that consumes external data.
-- **Security tests before feature tests** for anything handling external data, user input, or auth.
-- **Document constraints, not capabilities:** What the system CANNOT do - read-only APIs, disallowed operations, rate/length limits.
-- **Prompt injection:** Boundary markers (`--- BEGIN/END DATA ---`) around untrusted data. XML tags for RAG document delimiters.
-- **Defence in depth:** Code-level enforcement is the primary defence. Prompt rules are secondary. Never rely on prompts alone.
-- **Never combine** unrestricted data access + untrusted content + autonomous action in one component.
+- **Sanitisation first:** Write the sanitisation layer before the feature that
+  consumes external data.
+- **Document constraints, not capabilities:** What the system CANNOT do -
+  read-only APIs, disallowed operations, rate/length limits.
+- **Never combine** unrestricted data access + untrusted content + autonomous
+  action in one component.
+- Full patterns (prompt injection defence, security testing order, defence in
+  depth, SafetyValve): `.claude/skills/security-hardening/SKILL.md`.
 
 ---
 
 ## Testing
 
 - **Test counts:** Always include current count when updating CLAUDE.md.
-- **Tiers** (user will specify):
-  - **Tier 1 - tests first:** Security, protocol compliance, sanitisation, API contracts.
-  - **Tier 2 - tests alongside:** Feature code. Tests in the same commit. Default tier.
-  - **Tier 3 - gap-fill:** Legacy catch-up only. User must explicitly request.
-- **Edge cases** (walk this checklist per function):
-  - Empty/missing: empty strings, None, missing keys, empty collections
-  - Boundary strings: 10k+ chars, single char, whitespace-only
-  - Unicode: emoji, Arabic, Chinese, mixed scripts
-  - Numeric: zero, negative, sys.maxsize, float infinity, NaN
-  - Type mismatches: wrong types for parameters
-- **Mocking:** `unittest.mock.patch` for all external services. Never hit real APIs in unit tests.
-- **Protocol specs:** Test against the spec, not just sample data.
-- **Prompt reliability:** Separate test suite hitting real API for projects using LLM calls.
+- **Default tier:** Tier 2 (tests alongside, same commit). User specifies
+  Tier 1 (tests first - security, protocols) or Tier 3 (gap-fill) when needed.
+- **Mocking:** `unittest.mock.patch` for all external services. Never hit
+  real APIs in unit tests.
+- Edge case checklist, tier details, protocol spec testing, prompt reliability
+  testing: `.claude/skills/testing-patterns/SKILL.md`.
 
 ---
 
@@ -107,6 +124,19 @@ project-name/
 ```
 
 Flat layout acceptable for simpler single-purpose tools. When directory structure changes, update the ASCII project map in README.md.
+
+For modular projects (flat layout role mapping):
+```
+{service}_client.py   - External service wrapper (one per service)
+{concern}.py          - Processor (pure logic, no I/O)
+{type}_writer.py      - Output generation
+db.py                 - Persistence
+cli.py                - Entrypoint / orchestrator
+models.py             - Shared frozen dataclasses
+config.py             - Typed config with from_env()
+```
+
+For package layouts, see `.claude/skills/modular-design/SKILL.md`.
 
 ---
 

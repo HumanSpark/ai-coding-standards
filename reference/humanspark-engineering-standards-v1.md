@@ -456,6 +456,379 @@ For single-session tasks or small projects, the "How It Evolved" section in CLAU
 
 ---
 
+## 12. Modular Design
+
+These patterns address the problem of re-explaining context to AI coding
+assistants. When Claude Code needs verbal context to understand a module's
+purpose, boundaries, or contracts, the code is missing structural
+documentation. The fix is not better prompting - it's building projects where
+the structure itself carries the context.
+
+Rules 12.1-12.5 define the structural patterns. Rules 12.6-12.10 define
+opinionated conventions for where specific types of code live and how data
+flows between them. The conventions are derived from patterns observed across
+tenderhelper (flat layout, 6 pipeline modules), SessionPilot (src/ package
+layout, 6 subsystems), the slide pipeline, and the book PDF pipeline.
+
+The evidence basis for structural patterns (12.1-12.5) is diagnostic - observed
+CC re-prompting patterns and refactoring history. The evidence basis for
+conventions (12.6-12.10) is architectural - recurring decisions made
+consistently across 9 repositories. Both should be revisited as the modular
+pattern is applied to more projects.
+
+
+### 12.1 Modules with distinct responsibilities get a README.md
+
+When a directory contains code with a distinct responsibility (scraping,
+scoring, notification, rendering), it gets a README.md describing five things:
+purpose (including what it does NOT do), public interface (function signatures
+with types), dependencies (internal, external, I/O), known issues, and testing
+instructions.
+
+The module README replaces verbal context-setting in CC prompts. Instead of
+explaining what a module does at the start of each session, you point CC at the
+README and tests. The contract is in the code, not in your head.
+
+The boundary statement ("does NOT do X") is as important as the purpose
+statement. It prevents responsibility creep and catches design violations
+early - if you find yourself writing "also handles scoring" in the scraper
+README, that's the signal to split.
+
+Update the README in the same commit as any interface change. A README that
+doesn't match __init__.py is worse than no README at all.
+
+A useful heuristic: if Claude Code needs to read more than 5-6 files to understand a task, the module boundaries are too loose. Tighten them until each task is self-contained within one module plus shared types.
+
+A template is deployed by setup.sh to `docs/MODULE-README-TEMPLATE.md` in
+each project.
+
+
+### 12.2 Public interfaces via __init__.py
+
+Python packages expose their public API through `__init__.py` with an explicit
+`__all__` list. Other modules import from the package, never from internal
+files.
+
+```python
+# scraper/__init__.py
+from .core import scrape_tenders, scrape_tender_detail
+
+__all__ = ["scrape_tenders", "scrape_tender_detail"]
+```
+
+This matters for two audiences. For CC, reading __init__.py instantly reveals
+the module's complete public API - five lines instead of reading 200 lines of
+implementation. For the developer, it means internal files (core.py, helpers.py,
+parsers.py) can be refactored, split, or reorganised without changing any
+imports elsewhere in the project.
+
+This rule applies to modules that are packages (directories with __init__.py).
+Single-file modules in flat layouts don't need this pattern.
+
+
+### 12.3 Shared typed models in models.py
+
+Data structures that flow between modules are defined as frozen dataclasses in
+a shared location (typically `src/projectname/models.py` or `models.py` in
+flat layouts). This was the pattern used in tenderhelper (TenderNotification,
+TenderDetail as the contract between email_reader, tender_fetcher,
+relevance_scorer, and digest_writer).
+
+```python
+@dataclass(frozen=True)
+class Tender:
+    reference: str
+    title: str
+    description: str
+    published: datetime
+```
+
+Frozen (immutable) dataclasses create clear data direction: Module A produces a
+Tender, Module B consumes it. Nobody mutates shared state. CC can reason about
+one module's logic without worrying about another module changing data
+underneath it.
+
+**The validation boundary:** Pydantic models are for parsing untrusted external
+input - API responses, config files, user input. They live at the point of
+entry, in the module that receives the data (e.g. the client module that calls
+an external API). Once validated, data is converted to a frozen dataclass
+before being passed to other modules. The two layers must not be mixed:
+
+- Pydantic at the edge (parsing, validation)
+- Frozen dataclasses inside (inter-module communication)
+- A module that receives API data validates into Pydantic, then converts to a
+  frozen dataclass before passing onward
+
+If models.py approaches 300 lines, apply the same extraction rule as any other
+file (Rule 4.5) - split into a `models/` package with per-domain files.
+
+A starter template is deployed by setup.sh to `src/models.py`.
+
+
+### 12.4 Typed configuration in config.py
+
+All tuneable values live in one file, structured as frozen dataclasses. Each
+module gets its own config section. A top-level AppConfig composes them and
+provides a `from_env()` or `from_yaml()` classmethod that reads from
+environment variables (per Rule 9.3) or YAML config files with sensible
+defaults.
+
+```python
+@dataclass(frozen=True)
+class ScraperConfig:
+    base_url: str = "https://www.etenders.gov.ie"
+    request_timeout: int = 30
+
+@dataclass(frozen=True)
+class AppConfig:
+    scraper: ScraperConfig = field(default_factory=ScraperConfig)
+
+    @classmethod
+    def from_env(cls) -> "AppConfig":
+        return cls(
+            scraper=ScraperConfig(
+                request_timeout=int(os.getenv("SCRAPER_TIMEOUT", "30")),
+            ),
+        )
+```
+
+Modules receive their specific config section (`ScraperConfig`), never the full
+`AppConfig` and never raw environment variables or YAML reads. This makes
+modules independently testable - pass a config object in the test, not a live
+environment.
+
+A starter template is deployed by setup.sh to `src/config.py`.
+
+
+### 12.5 When to apply modular structure
+
+Not every project needs full modularisation. The trigger is re-explaining
+context to CC - that's the signal that the project has outgrown script-level
+organisation.
+
+**Apply when:**
+- More than 3 source files with distinct responsibilities
+- You've re-explained context to CC more than twice
+- Files are approaching the 300-line extraction threshold (Rule 4.5)
+- You expect to maintain the project beyond 6 months
+
+**Don't apply when:**
+- Single-purpose script under 200 lines
+- One-off automation you won't maintain
+- Exploratory spike (spike first as a single script, modularise when the
+  approach is validated)
+
+For spikes: write the spike, validate the approach, then migrate into modular
+structure before building on top of it. The spike is research. The module is
+the deliverable.
+
+
+### 12.6 Standard module roles
+
+Every project has recurring types of code. These conventions define where each
+type lives, eliminating the micro-decisions that burn CC tokens and cause
+inconsistency across projects.
+
+The roles below map to files (flat layout) or package directories (src/ layout).
+Not every project needs all roles - create them as needed, but when you do
+create them, put them in the standard location.
+
+| Role | Flat layout | Package layout | Responsibility |
+|------|-------------|----------------|----------------|
+| **Client** | `{service}_client.py` | `clients/{service}.py` | Wraps a single external service (HTTP API, database, message queue). Handles connection, auth, retries, timeouts. Returns Pydantic models at the validation boundary, which callers convert to frozen dataclasses. |
+| **Storage** | `db.py` | `storage/` or `db.py` | Application state persistence - SQLite, file I/O for state. External data file ingestion (CSV imports, data dumps) is a client role. Accepts and returns frozen dataclasses. Owns the schema and migrations. One storage module per project unless there are genuinely separate data stores. |
+| **Processor** | `{concern}.py` | `{concern}/` | Pure business logic - scoring, detection, transformation, parsing. No I/O, no network calls, no database access. Takes dataclasses in, returns dataclasses out. The most testable layer. |
+| **Output** | `{output_type}_writer.py` | `output/` or `{output_type}/` | Generates deliverables - markdown digests, HTML reports, notifications, UI updates. Consumes processed dataclasses. |
+| **Entrypoint** | `{project_name}.py` or `cli.py` | `cli.py` or `main.py` | Thin orchestrator. Wires modules together, handles arg parsing, configures logging. No business logic. This is the only file that imports from multiple modules. |
+| **Models** | `models.py` | `models.py` | Shared frozen dataclasses (Rule 12.3). |
+| **Config** | `config.py` | `config.py` | Typed configuration (Rule 12.4). |
+
+**Evidence:** Tenderhelper naturally evolved into exactly this structure:
+`email_reader.py` (client), `tender_fetcher.py` (client), `relevance_scorer.py`
+(processor), `db.py` (storage), `digest_writer.py` (output),
+`tender_scanner.py` (entrypoint), `models.py`, `config.yaml`. SessionPilot
+follows the same logical roles in a package layout: `stt/` (client),
+`detection/` (processor), `agenda/` (processor), `ui/` (output).
+
+**The critical constraint:** Processors have no I/O. They take dataclasses in
+and return dataclasses out. This is what makes them trivially testable and easy
+for CC to reason about in isolation. If a processor needs data from an external
+source, the entrypoint fetches it via a client and passes it in.
+
+
+### 12.7 The data flow pipeline
+
+Data flows through the system in one direction, with explicit type transitions
+at each boundary. This is the canonical path:
+
+```
+External source
+    ↓
+Client module (HTTP, IMAP, filesystem)
+    ↓ raw response
+Pydantic validation (in the client module)
+    ↓ validated Pydantic model
+Convert to frozen dataclass
+    ↓ frozen dataclass (enters the internal system)
+Processor module(s) (scoring, detection, transformation)
+    ↓ enriched/transformed frozen dataclass
+Output module (digest, notification, UI) or Storage module (SQLite, file)
+```
+
+**Key rules:**
+
+1. **Pydantic lives at the edge.** Client modules validate external data into
+   Pydantic models, then convert to frozen dataclasses before returning to
+   callers. No other module imports Pydantic.
+
+2. **Processors are pure.** They receive frozen dataclasses and return frozen
+   dataclasses. No network calls, no file I/O, no database access. If a
+   processor's test needs a mock, something is in the wrong layer.
+
+3. **The entrypoint owns the pipeline.** The sequence of "fetch via client,
+   process, store/output" is expressed in the entrypoint (cli.py), not buried
+   inside modules. This makes the full pipeline readable in one place.
+
+4. **New dataclass types for enriched data.** When a processor adds information
+   (e.g. a relevance score), it returns a new dataclass type that wraps or
+   extends the input type. The tenderhelper pattern: `TenderNotification` →
+   `TenderDetail` → `ScoredTender`. Each stage has its own type.
+
+**Evidence:** Tenderhelper's pipeline follows this exactly: email_reader
+(client) → tender_fetcher (client) → relevance_scorer (processor) → db
+(storage) → digest_writer (output), with models.py defining the types at
+each transition. SessionPilot follows the same pattern: STT client → transcript
+buffer → phrase detector/tangent tracker (processors) → UI overlay (output).
+
+
+### 12.8 Error handling at module boundaries
+
+Modules define their own exception types for errors that callers need to
+handle. These are thin, specific, and defined at the top of the module's
+main file or in a shared `exceptions.py`.
+
+```python
+class TenderFetchError(Exception):
+    """Raised when a tender detail page cannot be fetched or parsed."""
+    pass
+
+class DPSPageError(TenderFetchError):
+    """Raised for DPS pages that have a different HTML structure."""
+    pass
+```
+
+**Convention:**
+
+1. **Modules raise, the entrypoint catches.** Processing modules raise
+   specific exceptions. The CLI entrypoint catches them and decides what to
+   do (log and continue, abort, retry). Modules never catch their own
+   exceptions to silently continue - that hides failures.
+
+2. **External service errors are wrapped.** Client modules catch
+   `requests.RequestException`, `sqlite3.Error`, etc. and re-raise as
+   project-specific exceptions. This prevents implementation details
+   (which HTTP library you use) from leaking into the rest of the system.
+
+3. **Processors never raise I/O errors.** Since processors have no I/O
+   (Rule 12.6), they only raise ValueError, TypeError, or domain-specific
+   exceptions. If a processor test needs to handle ConnectionError, something
+   is in the wrong layer.
+
+4. **Always include context in exceptions.** Pass the resource ID, URL, or
+   input that caused the failure. `TenderFetchError(f"Failed to parse
+   {resource_id}: {e}")` not just `TenderFetchError(str(e))`.
+
+**Evidence:** Tenderhelper's DPS parsing issue was discovered because the
+fetcher raised a clear error on the different page structure rather than
+silently returning partial data. This follows Rule 1.2 (detection before
+correction) applied at the module level.
+
+
+### 12.9 External service clients
+
+Every external service (HTTP API, database, email, filesystem for data
+ingestion) gets its own client module. Client modules are the only place in the
+system that performs I/O to external services.
+
+**Convention:**
+
+1. **One client per service.** `tender_fetcher.py` talks to eTenders.
+   `email_reader.py` talks to notmuch. Even if the implementation is 40 lines,
+   it gets its own file. This makes it replaceable and independently testable.
+
+2. **Clients accept config, not raw credentials.** Pass a typed config section
+   (Rule 12.4), not API keys or URLs as string parameters.
+
+3. **Clients return validated data.** The client is responsible for parsing the
+   raw response (HTML, JSON, IMAP) and returning structured data. Callers
+   never see raw HTTP responses or BeautifulSoup objects.
+
+4. **Clients handle retries and timeouts.** Retry logic, backoff, and timeout
+   configuration live in the client, not in the caller. Use config values
+   (Rule 12.4) for retry counts and timeout durations.
+
+5. **Tests use saved response fixtures.** Save real responses (HTML pages, JSON
+   payloads) to `tests/fixtures/` and load them in tests. The client's parsing
+   logic is tested against real data without making network calls. Capture
+   fixtures from the live service with a one-liner curl/wget and commit them.
+
+6. **Fixture naming:** `{service}_{scenario}.{ext}` - e.g.
+   `etenders_cft_standard.html`, `etenders_cft_dps.html`,
+   `assemblyai_transcript_short.json`. The scenario name should describe what
+   makes this fixture interesting for testing.
+
+**Evidence:** Tenderhelper's `tender_fetcher.py` follows this exactly - it
+takes a resource ID, fetches the HTML, parses with BeautifulSoup, and returns a
+`TenderDetail` dataclass. The test uses a saved HTML fixture. The DPS parsing
+failure was caught because the fixture for a DPS page exposed the structural
+difference.
+
+
+### 12.10 Logging conventions
+
+Logging follows a single convention across all projects. The goal is readable
+logs that CC can interpret when debugging, without modules fighting over
+logging configuration.
+
+**Convention:**
+
+1. **Every module gets a logger.** First line after imports:
+   `logger = logging.getLogger(__name__)`. This creates loggers named after
+   the module path (e.g. `projectname.scraper.core`), which makes filtering
+   trivial.
+
+2. **The entrypoint configures logging.** `logging.basicConfig()` is called
+   exactly once, in `cli.py` or `main.py`. Modules never call
+   `basicConfig()`, `setLevel()`, or add handlers. They just use their
+   `logger` instance.
+
+3. **Log level meanings:**
+   - `DEBUG` - internal state useful during development (parsed field values,
+     score calculations, config loaded)
+   - `INFO` - pipeline progress (started fetching, scored N tenders,
+     wrote digest)
+   - `WARNING` - recoverable problems (timeout on one tender, skipped
+     unparseable field, retrying)
+   - `ERROR` - failures that affect output (couldn't fetch tender,
+     database write failed)
+
+4. **Include identifiers in log messages.** Always include the resource ID,
+   URL, or other identifier that makes the log message actionable:
+   `logger.warning("Timeout fetching tender %s, retrying", resource_id)` not
+   `logger.warning("Timeout, retrying")`.
+
+5. **No print statements in modules.** Use `logger.info()` for progress
+   messages and `logger.debug()` for diagnostic output. The only acceptable
+   `print()` calls are in the entrypoint for user-facing output (e.g.
+   `--dry-run` mode showing results to stdout).
+
+**Evidence:** This matches stdlib logging best practices and the pattern used
+across projects. The convention of logger-per-module with entrypoint-only
+configuration is standard Python and prevents the configuration conflicts
+that occur when modules each set up their own logging.
+
+---
+
 ## Appendix A: Rules Derivation
 
 Each rule in this document traces back to specific evidence. This appendix maps rules to their origin for future review and challenge.
@@ -490,3 +863,13 @@ Each rule in this document traces back to specific evidence. This appendix maps 
 | Pre-emptive state serialisation | Luna/OpenClaw seven-layer analysis: 90% context loss reduced to <5% |
 | HANDOFF.md structured resume points | Luna/OpenClaw analysis + ChatSync pattern emergent in this project |
 | Selective context loading | Luna entity file decomposition + .claude/skills/ progressive disclosure pattern |
+| Module READMEs as contracts (12.1) | CC re-prompting analysis: verbal context needed per session correlated with missing structural docs. |
+| Public interfaces via __init__.py (12.2) | CC token analysis: reading 5-line __init__.py vs 200-line implementation. Refactoring safety from import indirection. |
+| Shared typed models (12.3) | tenderhelper models.py (TenderNotification/TenderDetail as inter-module contract). CC reasoning: frozen dataclasses prevent cross-module mutation confusion. Pydantic-at-boundaries from tenderhelper API parsing vs internal data flow. |
+| Typed configuration (12.4) | Extends Rule 9.3 (env files). SessionPilot config system (YAML with per-subsystem sections). CC readability: typed signatures vs dict access. Testability: config injection vs env variable mocking. |
+| When to apply modular structure (12.5) | Counter-pattern to over-engineering. Trigger is "re-explained context to CC more than twice." Flat layout remains valid per Rule 2.2 for smaller projects. |
+| Standard module roles (12.6) | tenderhelper pipeline: email_reader (client), tender_fetcher (client), relevance_scorer (processor), db (storage), digest_writer (output), tender_scanner (entrypoint). SessionPilot: stt/ (client), detection/ (processor), agenda/ (processor), ui/ (output). Same logical roles in both flat and package layouts across 9 repos. |
+| Data flow pipeline (12.7) | tenderhelper: TenderNotification → TenderDetail → ScoredTender type chain. SessionPilot: audio → transcript → classification → alert. Pydantic-at-edge derived from tenderhelper's HTML parsing (external) vs inter-module frozen dataclasses (internal). |
+| Error handling at module boundaries (12.8) | tenderhelper DPS parsing: clear error on structural difference rather than silent partial data. Aligns with Rule 1.2 (detection before correction). spark project: P0 fixes from swallowed errors in context_builder.py. |
+| External service clients (12.9) | tenderhelper tender_fetcher.py: one service, one file, fixture-tested. SessionPilot stt/: AssemblyAI wrapped with config injection. Fixture naming from tenderhelper test_fixtures/ directory. |
+| Logging conventions (12.10) | stdlib logging best practices. Consistent across projects where applied. Module-level logger + entrypoint-only config prevents the handler duplication seen in spark early development. |
