@@ -1,6 +1,6 @@
 # HumanSpark Engineering Standards
 
-**Version:** 1.0 (Draft)
+**Version:** 1.0
 **Date:** 12 March 2026
 **Author:** Alastair McDermott
 **Derived from:** Git archaeology across 7 repositories (960+ commits), CLAUDE.md evolution analysis (52+ edits across 6 projects), and architectural review sessions.
@@ -146,7 +146,7 @@ Header format (Python example - adapt comment syntax per language):
 ```python
 # File: src/module_name.py
 # Purpose: One concise sentence describing primary responsibility.
-# Project: ProjectName | Date: 2026-03-12
+# Project: ProjectName | Date: YYYY-MM-DD
 #
 # Overview: One paragraph describing logic, major functions/classes,
 # data flow, dependencies, and interactions with other modules.
@@ -394,7 +394,7 @@ Key flow: **{step -> step -> step}**
 
 ## Git Conventions
 
-- Conventional commits: feat/fix/docs/refactor/test/chore
+- Conventional commits: feat/fix/docs/refactor/test/chore/ux
 - NEVER include Co-Authored-By in commit messages
 - Work on main only
 ```

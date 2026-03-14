@@ -78,6 +78,6 @@ flow between modules. `src/projectname/config.py` defines typed configuration.
 
 ## Git Conventions
 
-- Conventional commits: feat/fix/docs/refactor/test/chore
+- Conventional commits: feat/fix/docs/refactor/test/chore/ux
 - NEVER include Co-Authored-By in commit messages
 - Work on main only

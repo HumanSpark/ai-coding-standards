@@ -51,6 +51,6 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 
 ## Git Conventions
 
-- Conventional commits: feat/fix/docs/refactor/test/chore
+- Conventional commits: feat/fix/docs/refactor/test/chore/ux
 - NEVER include Co-Authored-By in commit messages
 - Work on main only

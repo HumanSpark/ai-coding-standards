@@ -172,24 +172,31 @@ git commit -m "chore: add HumanSpark engineering standards"
 
 ## Your Projects at a Glance
 
-Current status of your coding projects (identified by having `.git`,
-`CLAUDE.md`, or `.claude/`):
+All 11 projects have been deployed via `setup.sh` and committed
+(initial rollout: 2026-03-14). To verify current state, run:
 
-| Project | CLAUDE.md | .claude/ | Status |
-|---------|-----------|----------|--------|
-| claritybot | yes | yes | Deployed and committed (`bcce591`, Mar 14) |
-| clearmail | yes | yes | Deployed and committed (`0637e13`, Mar 14) |
-| gdrive-ops | yes | yes | Deployed and committed (`c537931`, Mar 14) |
-| humansparkforge | yes | yes | Deployed and committed (`90c8510`, Mar 14) |
-| inbox-roulette | yes | yes | Deployed and committed (`81bd919`, Mar 14) |
-| ragbuilder | yes | yes | Deployed and committed (`b80b3c2`, Mar 14) |
-| sessionpilot | yes | yes | Deployed and committed (`319f5a1`, Mar 14) |
-| shared-email | yes | yes | Deployed and committed (`c2732f5`, Mar 14) |
-| spark | yes | yes | Deployed and committed (`5eb8b6d`, Mar 14) |
-| tenderhelper | yes | yes | Deployed and committed (`9d20a67`, Mar 14) |
-| workstation-dotfiles | yes | yes | Deployed and committed (`b4bcfcf`, Mar 14) |
+```bash
+for project in \
+  claritybot clearmail gdrive-ops humansparkforge inbox-roulette \
+  ragbuilder sessionpilot shared-email \
+  spark tenderhelper workstation-dotfiles; do
+  echo "$project: $(cd ~/$project && git log --oneline -1 -- .claude/ CLAUDE.md)"
+done
+```
 
-**Legend:** All projects have been deployed via setup.sh and committed.
+| Project |
+|---------|
+| claritybot |
+| clearmail |
+| gdrive-ops |
+| humansparkforge |
+| inbox-roulette |
+| ragbuilder |
+| sessionpilot |
+| shared-email |
+| spark |
+| tenderhelper |
+| workstation-dotfiles |
 
 ---
 
