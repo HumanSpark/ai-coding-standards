@@ -60,8 +60,8 @@ some of these in place.
 cd ~/ai-coding-standards
 
 for project in \
-  clearmail gdrive-ops humansparkforge inbox-roulette \
-  ragbuilder sessionpilot shared-email sign-making \
+  claritybot clearmail gdrive-ops humansparkforge inbox-roulette \
+  ragbuilder sessionpilot shared-email \
   spark tenderhelper workstation-dotfiles; do
   echo ""
   echo "=========================================="
@@ -185,7 +185,6 @@ Current status of your coding projects (identified by having `.git`,
 | ragbuilder | yes | yes | Deployed and committed (`b80b3c2`, Mar 14) |
 | sessionpilot | yes | yes | Deployed and committed (`319f5a1`, Mar 14) |
 | shared-email | yes | yes | Deployed and committed (`c2732f5`, Mar 14) |
-| sign-making | yes | yes | Deployed and committed (`9fd29c9`, Mar 14) |
 | spark | yes | yes | Deployed and committed (`5eb8b6d`, Mar 14) |
 | tenderhelper | yes | yes | Deployed and committed (`9d20a67`, Mar 14) |
 | workstation-dotfiles | yes | yes | Deployed and committed (`b4bcfcf`, Mar 14) |
