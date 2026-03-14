@@ -175,23 +175,23 @@ git commit -m "chore: add HumanSpark engineering standards"
 Current status of your coding projects (identified by having `.git`,
 `CLAUDE.md`, or `.claude/`):
 
-| Project | CLAUDE.md | .claude/ | Action needed |
-|---------|-----------|----------|---------------|
-| claritybot | yes | - | Run setup (adds skills, agents, settings) |
-| clearmail | yes | yes | Run setup (fills gaps), review CLAUDE.md |
-| gdrive-ops | yes | - | Run setup (adds skills, agents, settings) |
-| humansparkforge | yes | yes | Run setup (fills gaps), review CLAUDE.md |
-| inbox-roulette | - | - | Run setup (gets everything) |
-| ragbuilder | yes | yes | Run setup (fills gaps), review CLAUDE.md |
-| sessionpilot | yes | yes | Run setup (fills gaps), review CLAUDE.md |
-| shared-email | - | - | Run setup (gets everything) |
-| sign-making | - | yes | Run setup (adds CLAUDE.md, skills, etc.) |
-| spark | yes | yes | Run setup (fills gaps), review CLAUDE.md |
-| tenderhelper | yes | yes | Run setup (fills gaps), review CLAUDE.md |
-| workstation-dotfiles | - | yes | Run setup (adds CLAUDE.md, skills, etc.) |
+| Project | CLAUDE.md | .claude/ | Status |
+|---------|-----------|----------|--------|
+| claritybot | yes | - | **Not deployed.** Run setup.sh |
+| clearmail | yes | yes | Deployed and committed (`0637e13`, Mar 14) |
+| gdrive-ops | yes | yes | Deployed and committed (`c537931`, Mar 14) |
+| humansparkforge | yes | yes | Deployed and committed (`90c8510`, Mar 14) |
+| inbox-roulette | yes | yes | Deployed, **not committed** |
+| ragbuilder | yes | yes | Deployed and committed (`b80b3c2`, Mar 14) |
+| sessionpilot | yes | yes | Deployed and committed (`319f5a1`, Mar 14) |
+| shared-email | yes | yes | Deployed, **not committed** |
+| sign-making | yes | yes | Deployed, **not committed** |
+| spark | yes | yes | Deployed and committed (`5eb8b6d`, Mar 14) |
+| tenderhelper | yes | yes | Deployed and committed (`9d20a67`, Mar 14) |
+| workstation-dotfiles | yes | yes | Deployed, **not committed** |
 
-**Legend:** "yes" = already has it, "-" = missing, "fills gaps" = only
-creates files that don't already exist.
+**Legend:** "Deployed" = setup.sh has been run and files are on disk.
+"Committed" = standards files are committed to git with the listed hash.
 
 ---
 
