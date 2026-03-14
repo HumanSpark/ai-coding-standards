@@ -177,6 +177,7 @@ Current status of your coding projects (identified by having `.git`,
 
 | Project | CLAUDE.md | .claude/ | Action needed |
 |---------|-----------|----------|---------------|
+| claritybot | yes | - | Run setup (adds skills, agents, settings) |
 | clearmail | yes | yes | Run setup (fills gaps), review CLAUDE.md |
 | gdrive-ops | yes | - | Run setup (adds skills, agents, settings) |
 | humansparkforge | yes | yes | Run setup (fills gaps), review CLAUDE.md |
