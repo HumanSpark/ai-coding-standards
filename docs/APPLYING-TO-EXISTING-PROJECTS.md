@@ -177,21 +177,20 @@ Current status of your coding projects (identified by having `.git`,
 
 | Project | CLAUDE.md | .claude/ | Status |
 |---------|-----------|----------|--------|
-| claritybot | yes | - | **Not deployed.** Run setup.sh |
+| claritybot | yes | yes | Deployed and committed (`bcce591`, Mar 14) |
 | clearmail | yes | yes | Deployed and committed (`0637e13`, Mar 14) |
 | gdrive-ops | yes | yes | Deployed and committed (`c537931`, Mar 14) |
 | humansparkforge | yes | yes | Deployed and committed (`90c8510`, Mar 14) |
-| inbox-roulette | yes | yes | Deployed, **not committed** |
+| inbox-roulette | yes | yes | Deployed and committed (`81bd919`, Mar 14) |
 | ragbuilder | yes | yes | Deployed and committed (`b80b3c2`, Mar 14) |
 | sessionpilot | yes | yes | Deployed and committed (`319f5a1`, Mar 14) |
-| shared-email | yes | yes | Deployed, **not committed** |
-| sign-making | yes | yes | Deployed, **not committed** |
+| shared-email | yes | yes | Deployed and committed (`c2732f5`, Mar 14) |
+| sign-making | yes | yes | Deployed and committed (`9fd29c9`, Mar 14) |
 | spark | yes | yes | Deployed and committed (`5eb8b6d`, Mar 14) |
 | tenderhelper | yes | yes | Deployed and committed (`9d20a67`, Mar 14) |
-| workstation-dotfiles | yes | yes | Deployed, **not committed** |
+| workstation-dotfiles | yes | yes | Deployed and committed (`b4bcfcf`, Mar 14) |
 
-**Legend:** "Deployed" = setup.sh has been run and files are on disk.
-"Committed" = standards files are committed to git with the listed hash.
+**Legend:** All projects have been deployed via setup.sh and committed.
 
 ---
 
