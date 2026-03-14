@@ -19,6 +19,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 
 1. **Genesis (2026-03-12):** Derived from git archaeology across 7 repos (960+ commits), CLAUDE.md evolution analysis (52+ edits across 6 projects), and analysis of Luna/OpenClaw memory architecture and Hay/Kelder prompting patterns.
 2. **Modular Design Patterns (2026-03-13):** Added Section 12 (Rules 12.1-12.10) covering module structure, standard roles, data flow pipeline, error handling, client conventions, and logging. New skill, templates (MODULE-README-TEMPLATE, models.py, config.py), three checklist sections. Thinned user-level Security/Testing sections (~215 tokens saved per session). Evidence: 9 repos, 1000+ commits.
+3. **CLAUDE.md Token Discipline (2026-03-14):** Added Rule 7.6 - token budgets and three-tier progressive disclosure (always-loaded / on-demand / archival). Updated user-level section, project template, and reference doc. Evidence: cross-project audit found 3 of 7 projects over budget, with evolution history and reference gotchas as the primary growth vectors.
 
 ## Build & Run
 
