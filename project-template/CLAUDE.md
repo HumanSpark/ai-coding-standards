@@ -1,4 +1,6 @@
 # {Project Name}
+<!-- ~NNNN tokens — budget: {2000 small | 4000 medium | 6000 large} -->
+<!-- This file is for LLMs. Humans read README.md. -->
 
 {One sentence: what it is, who it's for, where it runs.}
 
@@ -12,7 +14,7 @@
 
 ## How It Evolved
 
-{Numbered chronological entries. Add new entries, never edit old ones.}
+{Numbered entries. When this section exceeds ~5 entries, move older phases to docs/HISTORY.md and keep a summary here.}
 
 1. **{Phase/Feature Name} ({date}):** {What was built, key design decisions, test count. Reference design doc if one exists.}
 

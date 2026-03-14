@@ -284,14 +284,38 @@ For larger projects, maintain separate rules files for different areas of the co
 
 The four types of CLAUDE.md edits observed across all projects:
 
-- **Phase completion:** Add a numbered entry to the evolution history, update test count, add new files to the key files table. Do this after every feature or fix batch. Never edit old entries - the history is append-only.
+- **Phase completion:** Add a numbered entry to the evolution history (or to `docs/HISTORY.md` if the section exceeds ~5 entries - see Rule 7.6), update test count, add new files to key files table if they're top-15 worthy.
 - **Architectural correction:** Update the key flow diagram, architecture description, or component relationships when the structure changes.
-- **Gotcha addition:** When something bites you in production or testing, add it to the gotchas section immediately.
+- **Gotcha addition:** Add to "Things to Watch Out For" if it affects everyday development. Subsystem-specific edge cases go in `docs/REFERENCE-GOTCHAS.md` instead. Consolidate with Security Boundaries or Key Patterns if there's overlap.
 - **Philosophy refinement:** Update the design philosophy section when you discover a new "keep strict" or "free to adapt" boundary. This is rare but high-value - it shapes every subsequent AI decision.
 
 ### 7.5 Commit messages are context for the next session
 
 Write commit messages as if Claude Code will read them to understand what happened. The conventional commit prefix makes this searchable. A message like `fix: resolve RFC 2822 date parsing for timezone-aware headers` is useful context. A message like `fix stuff` is not.
+
+### 7.6 CLAUDE.md token budgets and progressive disclosure
+
+CLAUDE.md is the LLM's "hot path" context - loaded into every conversation, costing money and diluting attention on every single interaction. Treat it like a performance-critical code path: measure, budget, and extract when it grows.
+
+**Token budgets:** Small projects (< 5 source files) should stay under 2,000 tokens. Medium projects (5-20 files) under 4,000 tokens. Large projects (20+ files) under 6,000 tokens. Add a `<!-- ~NNNN tokens — budget: NNNN -->` comment at the top of CLAUDE.md so growth is visible and reviewable.
+
+**Three tiers of LLM context:**
+
+1. **Tier 1 - Always loaded** (`CLAUDE.md`): Design philosophy, architecture overview, build/run, testing, security boundaries, active gotchas, key files (top 10-15). This is what prevents mistakes in the current session.
+2. **Tier 2 - Loaded on demand** (`.claude/skills/`, `docs/*.md`): Detailed patterns, module contracts, reference gotchas, implementation guides. Loaded when working in the relevant area.
+3. **Tier 3 - Archival** (`docs/HISTORY.md`, `docs/CHANGELOG.md`, git log): Evolution history, old design decisions, completed phase details. Never auto-loaded. Git log is the authoritative source.
+
+**What stays in CLAUDE.md (Tier 1):** Project identity, design philosophy (strict/flexible), build and run commands, test commands with count, architecture (key flow, not every file), security boundaries, active gotchas (things that WILL bite you in normal development, not things that once bit you), git conventions.
+
+**What moves out when the file grows:** "How It Evolved" past ~5 entries moves to `docs/HISTORY.md`, replaced with a 3-line summary. Reference gotchas (edge cases for specific subsystems) move to `docs/REFERENCE-GOTCHAS.md`. Exhaustive key files tables (20+ entries) get trimmed to the top 10-15, with the full list in README.md.
+
+**Techniques for trimming:**
+
+- **Deduplicate across sections.** Gotchas often restate security boundaries or key patterns verbatim. When the same fact appears in multiple sections, keep it in the most authoritative one and remove the copies. This is consistently the easiest win - in practice, 30-50% of gotchas are duplicates of content already in Security Boundaries or Key Patterns.
+- **Split active from reference gotchas.** Active gotchas affect everyday development (format rules, delimiter conventions, deployment hooks). Reference gotchas are edge cases you only hit when working on specific subsystems. Active stays in CLAUDE.md; reference moves to `docs/REFERENCE-GOTCHAS.md`.
+- **Use standard filenames** for progressive disclosure so the LLM can find them without being told: `docs/HISTORY.md` (evolution), `docs/REFERENCE-GOTCHAS.md` (subsystem gotchas), `docs/REFERENCE-PATTERNS.md` (detailed implementation patterns), `docs/CANVAS-REFERENCE.md` or `docs/{SUBSYSTEM}-REFERENCE.md` (domain-specific reference).
+
+**Evidence:** The spark project's CLAUDE.md reached ~10,700 tokens - 67% was evolution history (~4,600 tokens for 39 phases) and reference gotchas (~2,600 tokens of subsystem-specific edge cases). Cross-project audit found 3 of 7 projects over budget. After applying these techniques, all three dropped to within budget while preserving all information in progressive disclosure files.
 
 ---
 
@@ -301,6 +325,8 @@ This template provides a Stage 4 starting point - the maturity level that the sp
 
 ```markdown
 # {Project Name}
+<!-- ~NNNN tokens — budget: {2000 small | 4000 medium | 6000 large} -->
+<!-- This file is for LLMs. Humans read README.md. -->
 
 {One sentence: what it is, who it's for, where it runs.}
 
@@ -314,7 +340,7 @@ This template provides a Stage 4 starting point - the maturity level that the sp
 
 ## How It Evolved
 
-{Numbered chronological entries. Add new entries, never edit old ones. This gives Claude Code full project context without reading git log.}
+{Numbered entries. When this section exceeds ~5 entries, move older phases to docs/HISTORY.md and keep a summary here.}
 
 1. **{Phase/Feature Name} ({date}):** {What was built, key design decisions, test count. Reference design doc if one exists.}
 
@@ -873,3 +899,4 @@ Each rule in this document traces back to specific evidence. This appendix maps 
 | Error handling at module boundaries (12.8) | tenderhelper DPS parsing: clear error on structural difference rather than silent partial data. Aligns with Rule 1.2 (detection before correction). spark project: P0 fixes from swallowed errors in context_builder.py. |
 | External service clients (12.9) | tenderhelper tender_fetcher.py: one service, one file, fixture-tested. SessionPilot stt/: AssemblyAI wrapped with config injection. Fixture naming from tenderhelper test_fixtures/ directory. |
 | Logging conventions (12.10) | stdlib logging best practices. Consistent across projects where applied. Module-level logger + entrypoint-only config prevents the handler duplication seen in spark early development. |
+| CLAUDE.md token budgets (7.6) | spark CLAUDE.md: ~10,700 tokens, 67% was evolution history (39 phases) and reference gotchas. Refactored to ~1,200 tokens with progressive disclosure. Cross-project analysis: 3 of 7 projects over budget. |
