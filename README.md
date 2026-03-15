@@ -16,6 +16,7 @@ humanspark-standards/
 │
 ├── project-template/
 │   ├── CLAUDE.md                - Project context template (Stage 4)
+│   ├── .gitignore               - Template gitignore (includes CLAUDE.local.md)
 │   ├── HANDOFF.md               - Session handoff template
 │   ├── .mcp.json                - Forgejo MCP server config
 │   ├── docs/
@@ -24,7 +25,9 @@ humanspark-standards/
 │   │   ├── models.py            - Starter shared types template
 │   │   └── config.py            - Starter typed config template
 │   └── .claude/
-│       ├── settings.json        - Hooks (py_compile on Python edits)
+│       ├── settings.json        - Permissions + hooks (py_compile on edits)
+│       ├── rules/
+│       │   └── deployment.md       - Template: always-loaded project rules
 │       ├── skills/
 │       │   ├── testing-patterns/SKILL.md
 │       │   ├── security-hardening/SKILL.md
@@ -94,7 +97,10 @@ Stage 4 template with: design philosophy (strict vs free-to-adapt), evolution hi
 Session continuity for multi-session work. Five fields: current task, last action, next action, key files, context. Updated after every completed subtask. Read first when resuming work.
 
 ### Project Template: `.claude/settings.json`
-PostToolUse hook that runs `python -m py_compile` after every Python file edit. Catches syntax errors (including tab/space mixing) before deployment.
+Permissions and hooks. Allow rules cover safe operations (reading, editing src/tests/docs, running tests, git status/diff/log/add/commit). Deny rules block sensitive files (.env, secrets, credentials), network egress (curl, wget), destructive ops (rm -rf), and git push (requires explicit approval). PostToolUse hook runs `python -m py_compile` after every Python file edit. Settings follow a 5-level precedence - see Rule 7.8 in the reference doc.
+
+### Project Template: `.gitignore`
+Template gitignore covering Python artifacts, environment files, databases, and personal Claude Code files (`CLAUDE.local.md`, `.claude/settings.local.json`, `.claude/agent-memory-local/`). Team-shared Claude Code config (settings.json, skills, agents, rules) is NOT gitignored.
 
 ### Project Template: `.mcp.json`
 Forgejo/Gitea MCP server in stdio mode. Gives Claude Code native access to repos, issues, milestones, PRs, wiki pages, and releases.

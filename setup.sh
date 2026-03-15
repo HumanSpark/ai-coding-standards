@@ -67,7 +67,7 @@ if [ -n "${1:-}" ]; then
     fi
 
     # Create directories
-    mkdir -p "$TARGET/.claude/skills" "$TARGET/.claude/agents"
+    mkdir -p "$TARGET/.claude/skills" "$TARGET/.claude/agents" "$TARGET/.claude/rules"
 
     # Copy settings.json
     if [ ! -f "$TARGET/.claude/settings.json" ]; then
@@ -88,6 +88,17 @@ if [ -n "${1:-}" ]; then
         fi
     done
 
+    # Copy rules
+    for rule in "$SCRIPT_DIR"/project-template/.claude/rules/*.md; do
+        rule_name=$(basename "$rule")
+        if [ ! -f "$TARGET/.claude/rules/$rule_name" ]; then
+            cp "$rule" "$TARGET/.claude/rules/$rule_name"
+            echo "   Created: .claude/rules/$rule_name"
+        else
+            echo "   Exists:  .claude/rules/$rule_name (skipped)"
+        fi
+    done
+
     # Copy agents
     for agent in "$SCRIPT_DIR"/project-template/.claude/agents/*.md; do
         agent_name=$(basename "$agent")
@@ -105,6 +116,14 @@ if [ -n "${1:-}" ]; then
         echo "   Created: .mcp.json"
     else
         echo "   Exists:  .mcp.json (skipped)"
+    fi
+
+    # Copy .gitignore
+    if [ ! -f "$TARGET/.gitignore" ]; then
+        cp "$SCRIPT_DIR/project-template/.gitignore" "$TARGET/.gitignore"
+        echo "   Created: .gitignore"
+    else
+        echo "   Exists:  .gitignore (skipped)"
     fi
 
     # Copy HANDOFF.md

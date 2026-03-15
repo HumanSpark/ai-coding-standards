@@ -71,7 +71,7 @@ Any Python file that might be imported must use underscores. Hyphens in Python f
 
 ### 2.4 .gitignore from the first commit
 
-Include at minimum: `__pycache__/`, `*.pyc`, `.coverage`, `*.db`, `venv/`, `.env`, `output/`, `.claude/`. The ragbuilder project had to retroactively remove committed `__pycache__` and `egg-info` files. SessionPilot had the same issue. Don't repeat this.
+Include at minimum: `__pycache__/`, `*.pyc`, `.coverage`, `*.db`, `venv/`, `.env`, `output/`. Also gitignore personal Claude Code files that shouldn't be shared: `CLAUDE.local.md`, `.claude/settings.local.json`, `.claude/agent-memory-local/`. Note: `.claude/settings.json`, `.claude/skills/`, `.claude/agents/`, and `.claude/rules/` ARE committed - they're team-shared project config. The ragbuilder project had to retroactively remove committed `__pycache__` and `egg-info` files. SessionPilot had the same issue. Don't repeat this.
 
 ### 2.5 Never commit real or personal data
 
@@ -301,13 +301,13 @@ CLAUDE.md is the LLM's "hot path" context - loaded into every conversation, cost
 
 **Three tiers of LLM context:**
 
-1. **Tier 1 - Always loaded** (`CLAUDE.md`): Design philosophy, architecture overview, build/run, testing, security boundaries, active gotchas, key files (top 10-15). This is what prevents mistakes in the current session.
+1. **Tier 1 - Always loaded** (`CLAUDE.md` + `.claude/rules/*.md`): Design philosophy, architecture overview, build/run, testing, security boundaries, active gotchas, key files (top 10-15). Rules files auto-load alongside CLAUDE.md - use them to split instruction sets that would push CLAUDE.md past its token budget (deployment constraints, environment rules, formatting rules). This is what prevents mistakes in the current session.
 2. **Tier 2 - Loaded on demand** (`.claude/skills/`, `docs/*.md`): Detailed patterns, module contracts, reference gotchas, implementation guides. Loaded when working in the relevant area.
 3. **Tier 3 - Archival** (`docs/HISTORY.md`, `docs/CHANGELOG.md`, git log): Evolution history, old design decisions, completed phase details. Never auto-loaded. Git log is the authoritative source.
 
 **What stays in CLAUDE.md (Tier 1):** Project identity, design philosophy (strict/flexible), build and run commands, test commands with count, architecture (key flow, not every file), security boundaries, active gotchas (things that WILL bite you in normal development, not things that once bit you), git conventions.
 
-**What moves out when the file grows:** "How It Evolved" past ~5 entries moves to `docs/HISTORY.md`, replaced with a 3-line summary. Reference gotchas (edge cases for specific subsystems) move to `docs/REFERENCE-GOTCHAS.md`. Exhaustive key files tables (20+ entries) get trimmed to the top 10-15, with the full list in README.md.
+**What moves out when the file grows:** Standalone instruction sets (deployment rules, environment constraints, formatting rules) move to `.claude/rules/*.md` - these stay always-loaded but keep CLAUDE.md focused on project identity. "How It Evolved" past ~5 entries moves to `docs/HISTORY.md`, replaced with a 3-line summary. Reference gotchas (edge cases for specific subsystems) move to `docs/REFERENCE-GOTCHAS.md`. Exhaustive key files tables (20+ entries) get trimmed to the top 10-15, with the full list in README.md.
 
 **Techniques for trimming:**
 
@@ -316,6 +316,68 @@ CLAUDE.md is the LLM's "hot path" context - loaded into every conversation, cost
 - **Use standard filenames** for progressive disclosure so the LLM can find them without being told: `docs/HISTORY.md` (evolution), `docs/REFERENCE-GOTCHAS.md` (subsystem gotchas), `docs/REFERENCE-PATTERNS.md` (detailed implementation patterns), `docs/CANVAS-REFERENCE.md` or `docs/{SUBSYSTEM}-REFERENCE.md` (domain-specific reference).
 
 **Evidence:** The spark project's CLAUDE.md reached ~10,700 tokens - 67% was evolution history (~4,600 tokens for 39 phases) and reference gotchas (~2,600 tokens of subsystem-specific edge cases). Cross-project audit found 3 of 7 projects over budget. After applying these techniques, all three dropped to within budget while preserving all information in progressive disclosure files.
+
+### 7.7 Authoring agents and subagents
+
+Agents live in `.claude/agents/<name>.md`. They use YAML frontmatter for configuration and markdown body for instructions. Feature-specific agents with preloaded skills consistently outperform general-purpose agents - give each agent a narrow job and the knowledge it needs to do it.
+
+**Frontmatter fields:**
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `name` | string | Identifier (lowercase, hyphens). Required. |
+| `description` | string | When to invoke. Use `"PROACTIVELY"` for auto-trigger. Required. |
+| `tools` | string | Comma-separated allowlist of permitted tools. Omit to inherit all parent tools. Supports `Agent(agent_type)` to restrict spawnable subagents. |
+| `disallowedTools` | string | Tools to deny, overriding inherited permissions. |
+| `model` | string | `haiku`, `sonnet`, `opus`, or `inherit` (default). Match model to task complexity. |
+| `maxTurns` | number | Cap iteration cycles before the agent stops. |
+| `permissionMode` | string | `default`, `acceptEdits`, `dontAsk`, `bypassPermissions`, `plan`. |
+| `skills` | list | Skill names to preload into agent context at startup. |
+| `mcpServers` | list | MCP servers available to this agent (names or inline configs). |
+| `hooks` | object | Lifecycle event handlers scoped to this agent (`PreToolUse`, `PostToolUse`, `Stop`). |
+| `memory` | string | Persistence scope: `user` (cross-project), `project` (team-shared), `local` (personal, gitignored). |
+| `isolation` | string | Set to `"worktree"` to run in a temporary git worktree with auto-cleanup. |
+| `background` | boolean | Set `true` to always run as a background task. |
+
+**Key patterns:**
+
+- **Least privilege tools.** Enumerate specific tools rather than inheriting everything. A code reviewer doesn't need Write or Bash.
+- **Preload skills over general instructions.** `skills: ["testing-patterns"]` injects domain knowledge at startup rather than hoping the agent discovers it.
+- **Use `plan` permission mode for research agents.** Prevents accidental modifications during exploration.
+- **Memory scoping.** Use `local` for ephemeral context, `project` for team-shared knowledge (version controlled), `user` for cross-project continuity.
+
+**Evidence:** The code-reviewer agent uses only `name` and `description`, which is appropriate for its narrow scope. More complex agents (data pipeline builders, deployment coordinators) benefit from explicit tool restrictions, model selection, and skill preloading to stay focused.
+
+### 7.8 Settings and permission configuration
+
+Claude Code settings follow a 5-level precedence hierarchy. Higher levels override lower:
+
+1. **Managed settings** (organisation-enforced, cannot be overridden)
+2. **Command-line arguments** (single-session overrides)
+3. **`.claude/settings.local.json`** (personal project settings, gitignored)
+4. **`.claude/settings.json`** (team-shared, committed)
+5. **`~/.claude/settings.json`** (user global defaults)
+
+**Critical rule: deny always wins.** Deny rules have absolute safety precedence and supersede all allow/ask rules regardless of hierarchy level. Array settings (allow, deny) concatenate and deduplicate across scopes.
+
+**Permission pattern syntax:**
+
+| Pattern | What it matches |
+|---------|----------------|
+| `Read` | All file reads |
+| `Edit(src/**)` | Edits to any file under src/ |
+| `Bash(python -m pytest *)` | pytest with any arguments |
+| `Bash(git status*)` | git status and variants |
+| `Read(**/.env)` | .env files at any depth |
+| `Read(**/secrets/**)` | Anything under any secrets/ directory |
+| `WebFetch(domain:example.com)` | Web fetches to a specific domain |
+| `mcp__server__tool` | Specific MCP server tool |
+
+**Default deny rules** (in the project template): `.env` files, secrets directories, credentials files, `curl`/`wget` (prevent exfiltration), `git push` (require explicit approval), `rm -rf` (prevent destructive operations).
+
+**Default allow rules** target safe, high-frequency operations: reading files, editing source/test/docs, running tests, git status/diff/log/add/commit. This means Claude Code can work fluidly on code without constant permission prompts, while dangerous operations still require human approval.
+
+**Evidence:** Derived from comparative analysis of permission patterns across Claude Code community best practices. The deny-first approach for network egress and destructive operations aligns with Rule 1.4 (security boundaries as constraints).
 
 ---
 
@@ -900,3 +962,6 @@ Each rule in this document traces back to specific evidence. This appendix maps 
 | External service clients (12.9) | tenderhelper tender_fetcher.py: one service, one file, fixture-tested. SessionPilot stt/: AssemblyAI wrapped with config injection. Fixture naming from tenderhelper test_fixtures/ directory. |
 | Logging conventions (12.10) | stdlib logging best practices. Consistent across projects where applied. Module-level logger + entrypoint-only config prevents the handler duplication seen in spark early development. |
 | CLAUDE.md token budgets (7.6) | spark CLAUDE.md: ~10,700 tokens, 67% was evolution history (39 phases) and reference gotchas. Refactored to ~1,200 tokens with progressive disclosure. Cross-project analysis: 3 of 7 projects over budget. |
+| Agent authoring patterns (7.7) | code-reviewer agent: narrow scope, minimal frontmatter. Comparative analysis of shanraisshan/claude-code-best-practice: 14 frontmatter fields documented, feature-specific agents with preloaded skills pattern. |
+| Rules directory for instruction splitting (7.6) | shanraisshan/claude-code-best-practice: `.claude/rules/` auto-loads alongside CLAUDE.md, complementing token discipline by splitting always-loaded instructions without bloating CLAUDE.md. |
+| Settings and permission patterns (7.8) | shanraisshan/claude-code-best-practice: 5-level settings hierarchy, deny-always-wins rule, wildcard permission syntax. Aligns with Rule 1.4 (security as constraints). |
