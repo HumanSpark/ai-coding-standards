@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.coverage
+htmlcov/
+venv/
+.venv/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Databases
+*.db
+*.sqlite3
+
+# Output
+output/
+
+# Claude Code - personal/local files (not shared with team)
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/agent-memory-local/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

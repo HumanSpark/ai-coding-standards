@@ -150,14 +150,18 @@ money, and dilutes attention. Treat it like code: budget tokens, review growth.
 Add `<!-- ~NNNN tokens — budget: NNNN -->` at the top so growth is visible.
 
 **Three tiers of context:**
-1. **Always loaded** (`CLAUDE.md`): Design philosophy, architecture, build/run,
-   testing, security, active gotchas, key files (top 10-15).
+1. **Always loaded** (`CLAUDE.md` + `.claude/rules/*.md`): Design philosophy,
+   architecture, build/run, testing, security, active gotchas, key files
+   (top 10-15). Use rules files to split instructions that would push
+   CLAUDE.md past its token budget.
 2. **On demand** (skills, `docs/*.md`): Detailed patterns, module contracts,
    reference gotchas. Loaded when working in the relevant area.
 3. **Archival** (`docs/HISTORY.md`, git log): Evolution history, completed
    phases. Never auto-loaded.
 
 **What moves out when CLAUDE.md grows:**
+- Standalone instruction sets (deployment rules, formatting rules) ->
+  `.claude/rules/*.md` (still always-loaded, but keeps CLAUDE.md focused).
 - "How It Evolved" past ~5 entries -> `docs/HISTORY.md`, keep 3-line summary.
 - Reference gotchas (edge cases for specific subsystems) -> `docs/REFERENCE-GOTCHAS.md`.
 - Exhaustive key files tables (20+ files) -> keep top 10-15, full list in README.md.

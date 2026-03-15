@@ -2,6 +2,11 @@
   "permissions": {
     "allow": [
       "Read",
+      "Edit(src/**)",
+      "Edit(tests/**)",
+      "Edit(docs/**)",
+      "Edit(CLAUDE.md)",
+      "Edit(README.md)",
       "Bash(python -m py_compile *)",
       "Bash(python -m pytest *)",
       "Bash(python3 -m py_compile *)",
@@ -10,11 +15,23 @@
       "Bash(find *)",
       "Bash(wc *)",
       "Bash(cat *)",
-      "Bash(git *)"
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ],
     "deny": [
       "Read(**/.env)",
-      "Read(**/.env.shared)"
+      "Read(**/.env.*)",
+      "Read(**/.env.shared)",
+      "Read(**/secrets/**)",
+      "Read(**/*credentials*)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(git push *)",
+      "Bash(git push)",
+      "Bash(rm -rf *)"
     ]
   },
   "hooks": {

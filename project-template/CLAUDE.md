@@ -1,6 +1,7 @@
 # {Project Name}
 <!-- ~NNNN tokens — budget: {2000 small | 4000 medium | 6000 large} -->
 <!-- This file is for LLMs. Humans read README.md. -->
+<!-- Personal preferences go in CLAUDE.local.md (gitignored). -->
 
 {One sentence: what it is, who it's for, where it runs.}
 
