@@ -373,9 +373,9 @@ Claude Code settings follow a 5-level precedence hierarchy. Higher levels overri
 | `WebFetch(domain:example.com)` | Web fetches to a specific domain |
 | `mcp__server__tool` | Specific MCP server tool |
 
-**Default deny rules** (in the project template): `.env` files, secrets directories, credentials files, `curl`/`wget` (prevent exfiltration), `git push` (require explicit approval), `rm -rf` (prevent destructive operations).
+**Default deny rules** (in the project template): `.env` files, secrets directories, credentials files, `curl`/`wget` (prevent exfiltration), `rm -rf` (prevent destructive operations).
 
-**Default allow rules** target safe, high-frequency operations: reading files, editing source/test/docs, running tests, git status/diff/log/add/commit. This means Claude Code can work fluidly on code without constant permission prompts, while dangerous operations still require human approval.
+**Default allow rules** target safe, high-frequency operations: reading files, editing source/test/docs, running tests, git status/diff/log/add/commit/push. This means Claude Code can work fluidly on code without constant permission prompts, while dangerous operations still require human approval.
 
 **Evidence:** Derived from comparative analysis of permission patterns across Claude Code community best practices. The deny-first approach for network egress and destructive operations aligns with Rule 1.4 (security boundaries as constraints).
 
