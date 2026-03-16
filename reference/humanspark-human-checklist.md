@@ -34,6 +34,8 @@ This checklist captures what YOU do - the decisions, habits, and discipline that
 - [ ] **Apply the "first code review" filter.** What will be wrong with the output? Tell Claude Code up front.
 - [ ] **Specify the testing tier.** Tell Claude Code whether this is Tier 1 (write tests first), Tier 2 (tests in the same commit), or Tier 3 (gap-fill).
 - [ ] **Include security context.** If the feature handles external data, user input, or auth, tell Claude Code to write the sanitisation layer first and security tests before feature tests.
+- [ ] **Error hints.** If the feature raises exceptions, remind Claude Code that every raise site needs a `hint` argument (HintedError pattern). The hint should tell a non-technical user what to check or do next.
+- [ ] **Type hints.** Remind Claude Code to include return types and parameter types on all public functions. `from __future__ import annotations` at the top of every file.
 
 ---
 

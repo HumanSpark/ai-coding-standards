@@ -174,15 +174,39 @@ Rules:
    TypeError, or domain-specific exceptions.
 4. **Always include context.** Pass resource ID, URL, or input that caused
    the failure.
+5. **Hints are mandatory on every raise site.** All project exceptions inherit
+   from `HintedError` (defined in `models.py`). The `hint` keyword argument
+   is required - it forces the developer to write a human-friendly suggestion
+   at the point where the most context is available about what went wrong.
 
 ```python
-class TenderFetchError(Exception):
+# Base class in models.py - all project exceptions inherit from this
+class HintedError(Exception):
+    def __init__(self, message: str, *, hint: str) -> None:
+        super().__init__(message)
+        self.hint = hint
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}\n  → {self.hint}"
+
+# Domain exception
+class TenderFetchError(HintedError):
     """Raised when a tender detail page cannot be fetched or parsed."""
     pass
 
-class DPSPageError(TenderFetchError):
-    """Raised for DPS pages with a different HTML structure."""
-    pass
+# At the raise site - hint written where context is richest
+raise TenderFetchError(
+    f"Failed to fetch tender {ref}: HTTP {response.status_code}",
+    hint=f"Check if the tender {ref} still exists on eTenders, "
+         "or try again in a few minutes if the site is slow"
+)
+```
+
+The entrypoint formats the output:
+```
+[etenders] fetch failed: Failed to fetch tender T-12345: HTTP 503
+  → Check if the tender T-12345 still exists on eTenders, or try again
+    in a few minutes if the site is slow
 ```
 
 ---
@@ -251,7 +275,7 @@ If no, it's a processor. Processors are pure - no mocks needed in tests.
 - [ ] Tests written against the public interface
 - [ ] Fixtures saved in tests/fixtures/ for external data
 - [ ] Logger created: `logger = logging.getLogger(__name__)`
-- [ ] Exception types defined if callers need to handle errors
+- [ ] Exception types inherit from HintedError with mandatory hint
 - [ ] CLAUDE.md key files table updated
 
 ## Anti-Patterns
@@ -264,4 +288,5 @@ If no, it's a processor. Processors are pure - no mocks needed in tests.
 - Do NOT do I/O in processors - if a test needs a mock, wrong layer
 - Do NOT configure logging in modules - only in the entrypoint
 - Do NOT catch exceptions inside modules to silently continue
+- Do NOT raise exceptions without a hint - inherit from HintedError
 - Do NOT let callers see raw HTTP responses or library objects from clients

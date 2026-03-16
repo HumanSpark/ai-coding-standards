@@ -15,13 +15,48 @@
 # If this file approaches 300 lines, split by domain area into a
 # models/ package with per-domain files.
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
 
-# TODO: Replace these examples with your project's actual data structures.
-# Keep frozen=True unless you have a specific reason for mutability.
+# --- Base exception with mandatory hint ---
+# All project exceptions should inherit from this. The hint field forces
+# you to write a human-friendly suggestion at every raise site.
+
+class HintedError(Exception):
+    """Base exception requiring a human-friendly hint.
+
+    Usage:
+        raise ServiceError(
+            "gws returned exit code 1 (stderr: 'token expired')",
+            hint="Try running 'gws auth login' to refresh your credentials"
+        )
+
+    Output:
+        [gdrive] push failed: gws returned exit code 1 (stderr: "token expired")
+          → Try running 'gws auth login' to refresh your Google credentials
+    """
+
+    def __init__(self, message: str, *, hint: str) -> None:
+        super().__init__(message)
+        self.hint = hint
+
+    def __str__(self) -> str:
+        return f"{super().__str__()}\n  → {self.hint}"
+
+
+# TODO: Replace these examples with your project's actual data structures
+# and exception types. Keep frozen=True unless you have a specific reason
+# for mutability.
+
+# Example project exception (inherits HintedError):
+#
+# class FetchError(HintedError):
+#     """Raised when an external resource cannot be fetched."""
+#     pass
 
 # Example enum for status tracking:
 #
