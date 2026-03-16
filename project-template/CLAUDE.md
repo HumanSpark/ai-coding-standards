@@ -80,5 +80,8 @@ flow between modules. `src/projectname/config.py` defines typed configuration.
 ## Git Conventions
 
 - Conventional commits: feat/fix/docs/refactor/test/chore/ux
+- Prefix with `[R&D]` for genuine technical uncertainty (unknown outcomes,
+  comparing alternatives, benchmarking). Explain why when abandoning an approach.
+  Do NOT use for routine work.
 - NEVER include Co-Authored-By in commit messages
 - Work on main only
