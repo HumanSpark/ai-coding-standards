@@ -45,6 +45,7 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 | project-template/.gitignore | Template gitignore (includes CLAUDE.local.md) |
 | project-template/HANDOFF.md | Session handoff template for multi-session work |
 | project-template/.claude/rules/deployment.md | Template: always-loaded project rules |
+| project-template/.claude/rules/specs.md | Enforces docs/plans/ as canonical spec location |
 | project-template/.claude/settings.json | Permissions + py_compile hook (see Rule 7.8 for precedence) |
 | project-template/.mcp.json | Forgejo MCP server config |
 | project-template/.claude/skills/modular-design/SKILL.md | Module boundary patterns and conventions |
