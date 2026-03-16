@@ -49,7 +49,11 @@ After validation passes, read the codebase to make tasks specific:
    point tasks at. This is how you learn the pattern to follow.
 4. **`models.py` and `config.py`** if they exist - to reference real types
 5. **Existing test directory structure** - to name test files correctly
-6. **Existing `WORKPLAN.md`** if present - for multi-phase awareness. If you
+6. **`pyproject.toml` or `requirements.txt`** - to verify any external packages
+   referenced in tasks are already dependencies. If a task needs a package that
+   isn't listed, either add an explicit "add X to dependencies" sub-task or
+   choose an approach using existing dependencies.
+7. **Existing `WORKPLAN.md`** if present - for multi-phase awareness. If you
    are generating a Phase 2 workplan after Phase 1 is complete, you need to
    know what was already built so you do not re-specify work or contradict
    completed decisions.
