@@ -515,13 +515,14 @@ For long-running agents: detect approaching context limits and trigger a structu
 
 ### 11.2 Structured resume points (HANDOFF.md)
 
-HANDOFF.md is a surgical resume point - not memory, not context, a bookmark. It contains exactly five fields:
+HANDOFF.md is a surgical resume point - not memory, not context, a bookmark. It contains exactly six fields:
 
 - **Current Task:** what you're working on right now
 - **Last Action:** what was just completed
 - **Next Action:** what should happen next
 - **Key Files:** where the important artefacts are
 - **Context:** anything else needed to resume effectively
+- **Check State:** last verification result (initialised as "Not yet run.")
 
 Update HANDOFF.md after every completed subtask, not just at session end. When resuming work, read HANDOFF.md first. It should take under 10 seconds to know exactly where to pick up.
 

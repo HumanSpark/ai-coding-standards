@@ -32,12 +32,16 @@ Updated after every completed subtask - not just at session end.
 - {Blockers or open questions}
 - {Commitments made (promised to user, agreed timelines)}
 
+## Check State
+
+Not yet run.
+
 ---
 
 ## Usage Notes
 
 This file is a bookmark, not a memory dump. Keep it short and surgical.
-Five fields, updated continuously. If resuming takes more than 10 seconds
+Six fields, updated continuously. If resuming takes more than 10 seconds
 of reading, the handoff is too verbose.
 
 For full project context, read CLAUDE.md.

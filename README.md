@@ -98,7 +98,7 @@ Universal AI instructions. Covers: role, git conventions, file headers, code sty
 Stage 4 template with: design philosophy (strict vs free-to-adapt), evolution history (append-only changelog), build/run commands, testing, architecture, key files, security boundaries, key patterns, gotchas, git conventions.
 
 ### Project Template: `HANDOFF.md`
-Session continuity for multi-session work. Five fields: current task, last action, next action, key files, context. Updated after every completed subtask. Read first when resuming work.
+Session continuity for multi-session work. Six fields: current task, last action, next action, key files, context, check state. Updated after every completed subtask. Read first when resuming work.
 
 ### Project Template: `.claude/settings.json`
 Permissions and hooks. Allow rules cover safe operations (reading, editing src/tests/docs, running tests, git status/diff/log/add/commit/push). Deny rules block sensitive files (.env, secrets, credentials), network egress (curl, wget), and destructive ops (rm -rf). PostToolUse hook runs `python -m py_compile` after every Python file edit. Settings follow a 5-level precedence - see Rule 7.8 in the reference doc.
