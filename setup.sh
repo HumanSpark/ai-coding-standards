@@ -287,6 +287,33 @@ if [ -n "$TARGET" ]; then
             fi
         done
 
+        # Create docs/plans/ directory and deploy docs templates
+        if ! $DRY_RUN; then
+            mkdir -p "$TARGET/docs/plans"
+        fi
+        if [ ! -f "$TARGET/docs/plans/.gitkeep" ]; then
+            if $DRY_RUN; then
+                echo "   Would create: docs/plans/.gitkeep"
+            else
+                touch "$TARGET/docs/plans/.gitkeep"
+                echo "   Created: docs/plans/.gitkeep"
+            fi
+        fi
+
+        # Deploy docs templates (create-if-missing)
+        for doc_template in MODULE-README-TEMPLATE.md SPEC-TEMPLATE.md; do
+            if [ ! -f "$TARGET/docs/$doc_template" ]; then
+                if [ -f "$SCRIPT_DIR/project-template/docs/$doc_template" ]; then
+                    if $DRY_RUN; then
+                        echo "   Would create: docs/$doc_template"
+                    else
+                        cp "$SCRIPT_DIR/project-template/docs/$doc_template" "$TARGET/docs/$doc_template"
+                        echo "   Created: docs/$doc_template"
+                    fi
+                fi
+            fi
+        done
+
         echo ""
         echo "   Project updated. Skipped: CLAUDE.md, HANDOFF.md, .mcp.json (project-specific)"
     else
@@ -405,8 +432,21 @@ if [ -n "$TARGET" ]; then
 
         # Copy docs directory templates
         if ! $DRY_RUN; then
-            mkdir -p "$TARGET/docs"
+            mkdir -p "$TARGET/docs" "$TARGET/docs/plans"
         fi
+
+        # Create docs/plans/.gitkeep for spec documents
+        if [ ! -f "$TARGET/docs/plans/.gitkeep" ]; then
+            if $DRY_RUN; then
+                echo "   Would create: docs/plans/.gitkeep"
+            else
+                touch "$TARGET/docs/plans/.gitkeep"
+                echo "   Created: docs/plans/.gitkeep"
+            fi
+        else
+            echo "   Exists:  docs/plans/.gitkeep (skipped)"
+        fi
+
         if [ ! -f "$TARGET/docs/MODULE-README-TEMPLATE.md" ]; then
             if $DRY_RUN; then
                 echo "   Would create: docs/MODULE-README-TEMPLATE.md"
@@ -416,6 +456,17 @@ if [ -n "$TARGET" ]; then
             fi
         else
             echo "   Exists:  docs/MODULE-README-TEMPLATE.md (skipped)"
+        fi
+
+        if [ ! -f "$TARGET/docs/SPEC-TEMPLATE.md" ]; then
+            if $DRY_RUN; then
+                echo "   Would create: docs/SPEC-TEMPLATE.md"
+            else
+                cp "$SCRIPT_DIR/project-template/docs/SPEC-TEMPLATE.md" "$TARGET/docs/SPEC-TEMPLATE.md"
+                echo "   Created: docs/SPEC-TEMPLATE.md"
+            fi
+        else
+            echo "   Exists:  docs/SPEC-TEMPLATE.md (skipped)"
         fi
 
         # Copy starter source templates (only if src/ exists or is being created)
