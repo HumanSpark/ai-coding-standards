@@ -39,6 +39,9 @@ Add CPV code matching and write tests for both scoring methods
 - Decision: using \b word boundaries for terms <= 3 chars to avoid false positives
 - Tried simple substring matching first, too many false positives on "AI"
 - CPV codes need exact prefix matching, not substring
+
+## Check State
+All 12 tests passing.
 ```
 
 ### For long-running agents
@@ -55,7 +58,7 @@ This runs EVERY time context pressure is detected. Not optional.
 
 ## Pattern 2: Structured Resume Points (HANDOFF.md)
 
-HANDOFF.md is a bookmark, not a memory dump. Five fields only:
+HANDOFF.md is a bookmark, not a memory dump. Six fields only:
 
 | Field | Purpose | Example |
 |-------|---------|---------|
@@ -64,6 +67,7 @@ HANDOFF.md is a bookmark, not a memory dump. Five fields only:
 | Next Action | Immediate next step | "Add message body extraction with charset handling" |
 | Key Files | Active artefacts | "email_parser.py, tests/test_parser.py" |
 | Context | Decisions, dead ends, blockers | "Chose imaplib over imapclient for zero deps" |
+| Check State | Last verification result | "Not yet run." or "All 45 tests passing" |
 
 Update after every completed subtask. Resuming should take under 10 seconds of reading.
 
@@ -118,4 +122,4 @@ Add HANDOFF.md when you find yourself spending more than 2 minutes re-establishi
 - Do NOT create one massive memory file that loads every session
 - Do NOT store raw conversation transcripts as "memory" (summarise first)
 - Do NOT rely on the AI's built-in context management for critical state
-- Do NOT treat HANDOFF.md as a diary - keep it to the five fields
+- Do NOT treat HANDOFF.md as a diary - keep it to the six fields
