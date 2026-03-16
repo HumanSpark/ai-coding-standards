@@ -20,7 +20,8 @@ humanspark-standards/
 │   ├── HANDOFF.md               - Session handoff template
 │   ├── .mcp.json                - Forgejo MCP server config
 │   ├── docs/
-│   │   └── MODULE-README-TEMPLATE.md  - Module contract template
+│   │   ├── MODULE-README-TEMPLATE.md  - Module contract template
+│   │   └── SPEC-TEMPLATE.md           - Feature spec template (intake → workplan)
 │   ├── src/
 │   │   ├── models.py            - Starter shared types template
 │   │   └── config.py            - Starter typed config template
@@ -32,6 +33,8 @@ humanspark-standards/
 │       │   ├── testing-patterns/SKILL.md
 │       │   ├── security-hardening/SKILL.md
 │       │   ├── prompt-engineering/SKILL.md
+│       │   ├── project-intake/SKILL.md
+│       │   ├── workplan-generation/SKILL.md
 │       │   ├── agent-memory/SKILL.md
 │       │   └── modular-design/SKILL.md
 │       └── agents/
@@ -116,6 +119,10 @@ Forgejo/Gitea MCP server in stdio mode. Gives Claude Code native access to repos
 **agent-memory:** Pre-emptive state serialisation, HANDOFF.md bookmark pattern, selective context loading, entity file decomposition. For any project with long-running agents or multi-session work.
 
 **modular-design:** Module boundary patterns, standard module roles (client, processor, storage, output), data flow pipeline, typed interfaces, CC-efficient structure.
+
+**project-intake:** Structured interview for capturing feature specs. Five phases (goal, scope, decisions, constraints, review) with scope-aware triage. Produces standard spec documents in `docs/plans/`.
+
+**workplan-generation:** Converts spec documents into ccloop-compatible WORKPLAN.md with specific, file-level tasks. Validates spec completeness, classifies tasks by module role, places stage gates at interface boundaries. Seeds HANDOFF.md with constraints.
 
 ### Agents
 
