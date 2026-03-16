@@ -17,6 +17,14 @@ Senior software engineer and collaborative peer. Question decisions, flag gaps, 
 - NEVER include Co-Authored-By lines
 - Commit messages should be specific enough for an AI agent in a future session to understand what changed
 - Commit to `main` only. No feature branches.
+- **R&D commits:** Prefix with `[R&D]` when work involves genuine technical
+  uncertainty - trying an approach where the outcome is unknown, comparing
+  alternatives, or benchmarking feasibility. When abandoning an approach, the
+  commit message MUST explain why (e.g., `[R&D] Revert live-query YTD - breaks
+  with incomplete historical data, switching to stored-value model`). Do NOT use
+  `[R&D]` for routine work: bug fixes, standard API integration, UI/CSS,
+  configuration, deployment, or anything solved on first attempt with known
+  techniques.
 
 ---
 

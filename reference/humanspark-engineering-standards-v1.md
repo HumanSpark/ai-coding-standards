@@ -133,6 +133,10 @@ Implementation plans are committed as standalone markdown files before any code 
 
 The clearmail config.py was edited three times in rapid succession (1, 22, and 29 minute gaps) after extracting hardcoded values. Each edit caught references that the previous one missed. When moving values to config, search the entire codebase for all references and update them in the same commit.
 
+### 3.6 R&D evidence discipline
+
+Prefix commits with `[R&D]` when the work involves genuine technical uncertainty - trying an approach where the outcome is unknown, comparing alternatives, or benchmarking to determine feasibility. When abandoning an approach, the commit message MUST explain why. Example: `[R&D] Revert live-query YTD - breaks with incomplete historical data, switching to stored-value model`. Do NOT use `[R&D]` for routine work: bug fixes, standard API integration, UI/CSS, configuration, deployment, or anything solved on first attempt with known techniques.
+
 ---
 
 ## 4. Code Style

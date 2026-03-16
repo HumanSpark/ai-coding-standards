@@ -27,7 +27,7 @@ You are reviewing code for a solo-developer Python project. Focus on catching re
 
 ## Warning (should fix)
 
-- [ ] Conventional commit prefix used
+- [ ] Conventional commit prefix used (or `[R&D]` for exploratory work with uncertain outcome)
 - [ ] Edge cases covered in tests (empty, boundary, unicode, type mismatch)
 - [ ] Config values not hardcoded
 - [ ] Security boundaries documented if new external data sources added

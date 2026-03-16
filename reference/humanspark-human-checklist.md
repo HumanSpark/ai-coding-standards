@@ -22,6 +22,7 @@ This checklist captures what YOU do - the decisions, habits, and discipline that
 ## Before Writing Each Feature
 
 - [ ] **Commit the plan first.** Write the implementation plan as a markdown file and commit it before writing any code. (Rule 3.4)
+- [ ] **Is this R&D?** If the outcome is genuinely uncertain - trying an untested approach, comparing alternatives, benchmarking feasibility - prefix commits with `[R&D]`. If it's routine work with known techniques, don't. (Rule 3.6)
 - [ ] **Decide the testing tier.** Is this Tier 1 (security/protocol - tests first), Tier 2 (feature - tests alongside), or Tier 3 (legacy gap-fill - tests after)? Make the decision explicitly, don't default to "I'll add tests later." (Rule 6.6)
 - [ ] **Run the "first code review" checkpoint.** Before sending a prompt to Claude Code, ask: "What would I correct on the first code review?" Then put those corrections into the prompt. Front-load: error handling patterns, CLI structure, logging approach, file paths, naming conventions. (Rule 7.2)
 - [ ] **Check file size before adding features.** Is the target file approaching 300 lines? If so, extract before adding more. (Rule 4.5)
