@@ -16,6 +16,8 @@
 # .env (project-level, never committed). The from_env() method reads
 # these via os.getenv() with defaults for every value.
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 import os

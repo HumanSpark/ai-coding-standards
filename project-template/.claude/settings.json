@@ -11,6 +11,8 @@
       "Bash(python -m pytest *)",
       "Bash(python3 -m py_compile *)",
       "Bash(python3 -m pytest *)",
+      "Bash(ruff check *)",
+      "Bash(ruff format *)",
       "Bash(grep *)",
       "Bash(find *)",
       "Bash(wc *)",

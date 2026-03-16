@@ -43,11 +43,49 @@ Every code file. Adapt comment syntax per language.
 
 ---
 
+## Development
+
+- **TDD is mandatory.** Use `Skill(superpowers:test-driven-development)` and
+  execute its red-green-refactor workflow: write a failing test, run it to
+  confirm failure, write the minimum code to pass, run tests to confirm green,
+  then refactor. Do this for every new feature, bug fix, and refactoring.
+- **Debug systematically.** When encountering any bug, test failure, or
+  unexpected behaviour, use `Skill(superpowers:systematic-debugging)` and
+  execute its diagnostic workflow before proposing a fix. Do not guess-and-patch.
+- **Verify before claiming done.** Before asserting that work is complete or
+  tests pass, use `Skill(superpowers:verification-before-completion)` and
+  execute its verification steps. Run the actual commands, read the actual
+  output, confirm success with evidence. No claims without proof.
+- **Plan before multi-step work.** For any task involving 3+ files or multiple
+  coordinated changes, use `Skill(superpowers:writing-plans)` and produce a
+  written plan before touching code. Single-file changes don't need this.
+
+---
+
 ## Code Style
 
 - **Language:** Python default. Bash/Fish for shell. HTML/CSS/Jinja2 for templates. Avoid JS unless required.
 - **CLI:** `argparse` with help text, epilog examples, sensible defaults, `--dry-run` for destructive ops.
 - **Error handling:** First draft, not follow-up. Every function doing I/O, network, or file ops.
+- **Error hints are mandatory.** Every raised exception must include a `hint` -
+  a human-friendly suggestion of what to check or do next. The technical detail
+  (exit codes, HTTP status, stderr) stays; the hint tells a non-technical user
+  what to actually do about it. Write the hint at the raise site where you have
+  the most context about what went wrong.
+  ```python
+  raise ServiceError(
+      "gws returned exit code 1 (stderr: 'token expired')",
+      hint="Try running 'gws auth login' to refresh your Google credentials"
+  )
+  ```
+- **Type hints:** Mandatory on all public function signatures, method
+  signatures, and module boundaries. Use `from __future__ import annotations`
+  at the top of every Python file. Return types are not optional.
+- **Linting:** `ruff` is the standard linter and formatter. Run `ruff check`
+  and `ruff format` before committing. Configure in `pyproject.toml`.
+- **Dependencies:** Pin all dependencies with exact versions in
+  `requirements.txt` or `pyproject.toml`. Never use unpinned or `>=` ranges
+  in production. `pip freeze > requirements.txt` after adding any package.
 - **Comments:** WHY, not WHAT. Reasoning for non-obvious decisions. Never state the obvious.
 - **File size:** Propose extraction when approaching 300 lines. Do not keep adding features past this.
 - **Naming:** Python filenames use underscores, never hyphens. All `.py` files, no exceptions.
