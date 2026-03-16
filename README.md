@@ -28,7 +28,8 @@ humanspark-standards/
 │   └── .claude/
 │       ├── settings.json        - Permissions + hooks (py_compile on edits)
 │       ├── rules/
-│       │   └── deployment.md       - Template: always-loaded project rules
+│       │   ├── deployment.md       - Template: always-loaded project rules
+│       │   └── specs.md            - Enforces docs/plans/ as canonical spec location
 │       ├── skills/
 │       │   ├── testing-patterns/SKILL.md
 │       │   ├── security-hardening/SKILL.md
