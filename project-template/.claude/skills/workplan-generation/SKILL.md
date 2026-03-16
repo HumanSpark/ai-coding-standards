@@ -208,6 +208,10 @@ but does not re-read the spec.}
 {Top 3-5 decisions from the spec that are most likely to be forgotten or
 contradicted during execution}
 
+## Check State
+
+Not yet run.
+
 [/HANDOFF]
 ```
 
