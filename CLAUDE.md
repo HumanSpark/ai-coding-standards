@@ -22,6 +22,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 3. **CLAUDE.md Token Discipline (2026-03-14):** Added Rule 7.6 - token budgets and three-tier progressive disclosure (always-loaded / on-demand / archival). Updated user-level section, project template, and reference doc. Evidence: cross-project audit found 3 of 7 projects over budget, with evolution history and reference gotchas as the primary growth vectors.
 4. **Claude Code Configuration Patterns (2026-03-15):** Added Rules 7.7 (agent authoring with 14 frontmatter fields), 7.8 (settings precedence and permission patterns). New template files: `.claude/rules/deployment.md`, `.gitignore` (with CLAUDE.local.md). Expanded settings.json with scoped permissions and deny rules. Updated Rule 7.6 to include `.claude/rules/` in Tier 1 context. Fixed Rule 2.4 to distinguish committed vs gitignored Claude Code files. Evidence: comparative analysis of shanraisshan/claude-code-best-practice.
 5. **Development Discipline & Code Quality (2026-03-16):** Added Development section to user-level instructions with four mandatory disciplines: TDD (red-green-refactor via superpowers skill), systematic debugging, verification-before-completion, and planning for multi-step work. Added Code Style rules: type hints, ruff linting, dependency pinning, mandatory error hints (HintedError base class). Updated models.py template with HintedError, modular-design skill with hint-at-raise-site pattern, settings.json with ruff permissions.
+6. **ccloop Planning Workflow (2026-03-16):** Added project-intake skill (structured interview with scope-aware triage, five phases, two-kind "I don't know" handling) and workplan-generation skill (spec validation, five specificity rules, stage gates, HANDOFF seeding). New SPEC-TEMPLATE.md as contract between skills. Updated setup.sh to deploy template and `docs/plans/` directory. Evidence: SparkCore Phase 2 (17 tasks, 195 tests, 53 minutes, 6 human commands) proved specific task descriptions are the key differentiator for autonomous execution quality.
 
 ## Build & Run
 
@@ -47,7 +48,10 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 | project-template/.claude/settings.json | Permissions + py_compile hook (see Rule 7.8 for precedence) |
 | project-template/.mcp.json | Forgejo MCP server config |
 | project-template/.claude/skills/modular-design/SKILL.md | Module boundary patterns and conventions |
+| project-template/.claude/skills/project-intake/SKILL.md | Structured interview producing spec documents |
+| project-template/.claude/skills/workplan-generation/SKILL.md | Spec-to-WORKPLAN converter for ccloop execution |
 | project-template/docs/MODULE-README-TEMPLATE.md | Module contract template |
+| project-template/docs/SPEC-TEMPLATE.md | Feature spec template (contract between intake and workplan skills) |
 | project-template/src/models.py | Starter shared types template |
 | project-template/src/config.py | Starter typed config template |
 | reference/humanspark-engineering-standards-v1.md | Master doc with evidence (Sections 1-12, Rules 7.7-7.8) |
