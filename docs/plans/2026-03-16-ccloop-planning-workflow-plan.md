@@ -8,7 +8,7 @@
 
 **Tech Stack:** Markdown (SKILL.md files), Bash (setup.sh modifications)
 
-**Spec:** `docs/specs/2026-03-16-ccloop-planning-workflow-design.md`
+**Spec:** `docs/plans/2026-03-16-ccloop-planning-workflow-design.md`
 
 ---
 
@@ -115,7 +115,7 @@ git commit -m "feat: add spec template for ccloop planning workflow"
 - Create: `project-template/.claude/skills/project-intake/SKILL.md`
 - Reference: `project-template/.claude/skills/modular-design/SKILL.md` (structure pattern)
 - Reference: `project-template/docs/SPEC-TEMPLATE.md` (output format)
-- Reference: `docs/specs/2026-03-16-ccloop-planning-workflow-design.md` (spec, Decisions 1-4, 11)
+- Reference: `docs/plans/2026-03-16-ccloop-planning-workflow-design.md` (spec, Decisions 1-4, 11)
 
 This is the largest single file. Follow the voice and organisation of
 `modular-design/SKILL.md`: frontmatter, When to Use, core content with
@@ -338,7 +338,7 @@ git commit -m "feat: add project-intake skill for structured feature interviews"
 - Reference: `project-template/.claude/skills/modular-design/SKILL.md` (structure pattern)
 - Reference: `project-template/.claude/skills/testing-patterns/SKILL.md` (testing tiers)
 - Reference: `project-template/HANDOFF.md` (seeding template)
-- Reference: `docs/specs/2026-03-16-ccloop-planning-workflow-design.md` (spec, Decisions 7-12)
+- Reference: `docs/plans/2026-03-16-ccloop-planning-workflow-design.md` (spec, Decisions 7-12)
 
 - [ ] **Step 1: Create skill directory**
 
