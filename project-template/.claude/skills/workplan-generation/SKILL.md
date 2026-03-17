@@ -147,6 +147,10 @@ Generate `WORKPLAN.md` at the project root with this structure:
 **Spec:** `docs/plans/{date}-{feature-name}.md`
 **Generated:** {YYYY-MM-DD}
 
+**CC: Never mark a STAGE GATE task as `- [x]`. Leave stage gates as `- [ ]`.
+Report gate criteria status in HANDOFF.md and stop working. Only the human
+marks stage gates complete.**
+
 ## Stage 1: {Stage Name}
 
 - [ ] Task 1: {specific task description}
