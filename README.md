@@ -41,6 +41,11 @@ humanspark-standards/
 │       └── agents/
 │           └── code-reviewer.md
 │
+├── docs/
+│   ├── rd-evidence-report.md                    - 12-repo, 1332-commit analysis
+│   ├── APPLYING-TO-EXISTING-PROJECTS.md         - Guide for retrofitting standards
+│   └── plans/                                   - Implementation plans for this repo
+│
 └── reference/
     ├── humanspark-engineering-standards-v1.md   - Master doc (full rules + evidence)
     └── humanspark-human-checklist.md            - Human workflow checklist
