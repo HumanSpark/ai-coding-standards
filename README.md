@@ -92,7 +92,7 @@ Or download from: https://github.com/raohwork/forgejo-mcp/releases
 ## What Each Component Does
 
 ### User-Level: `~/.claude/CLAUDE.md`
-Universal AI instructions. Covers: role, git conventions, file headers, code style, module design, placeholders, security, testing, project structure, CLAUDE.md maintenance, writing style, and a "do not" list.
+Universal AI instructions. Covers: role, git conventions, file headers, development discipline (TDD, debugging, verification, strict scope), code style (including anti-premature-abstraction), module design (composition over inheritance), placeholders, security, testing, project structure, CLAUDE.md maintenance, writing style, and a "do not" list.
 
 ### Project Template: `CLAUDE.md`
 Stage 4 template with: design philosophy (strict vs free-to-adapt), evolution history (append-only changelog), build/run commands, testing, architecture, key files, security boundaries, key patterns, gotchas, git conventions.
