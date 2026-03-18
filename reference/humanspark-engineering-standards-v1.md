@@ -121,19 +121,15 @@ Start with a verb after the prefix: `feat: add`, `fix: resolve`, `docs: update`,
 
 This is a personal preference that has been present in every single CLAUDE.md since the very first commit across all projects. It's the most consistent instruction across the entire codebase.
 
-### 3.3 Work on main only
-
-No feature branches for single-developer projects. This was explicitly stated in the spark CLAUDE.md: "This is a single-developer project with no CI gates or code review, so branches just create merge debt."
-
-### 3.4 Commit the plan before the code
+### 3.3 Commit the plan before the code
 
 Implementation plans are committed as standalone markdown files before any code is written. This is a strong pattern across all projects - the largest commits in ragbuilder, clearmail, sessionpilot, and tenderhelper are all implementation plan documents. Commit the plan, then implement against it.
 
-### 3.5 When extracting values to config, grep the entire codebase
+### 3.4 When extracting values to config, grep the entire codebase
 
 The clearmail config.py was edited three times in rapid succession (1, 22, and 29 minute gaps) after extracting hardcoded values. Each edit caught references that the previous one missed. When moving values to config, search the entire codebase for all references and update them in the same commit.
 
-### 3.6 R&D evidence discipline
+### 3.5 R&D evidence discipline
 
 Prefix commits with `[R&D]` when the work involves genuine technical uncertainty - trying an approach where the outcome is unknown, comparing alternatives, or benchmarking to determine feasibility. When abandoning an approach, the commit message MUST explain why. Example: `[R&D] Revert live-query YTD - breaks with incomplete historical data, switching to stored-value model`. Do NOT use `[R&D]` for routine work: bug fixes, standard API integration, UI/CSS, configuration, deployment, or anything solved on first attempt with known techniques.
 
@@ -462,7 +458,6 @@ Key flow: **{step -> step -> step}**
 
 - Conventional commits: feat/fix/docs/refactor/test/chore/ux
 - NEVER include Co-Authored-By in commit messages
-- Work on main only
 ```
 
 ---

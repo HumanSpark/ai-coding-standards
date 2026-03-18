@@ -84,4 +84,3 @@ flow between modules. `src/projectname/config.py` defines typed configuration.
   comparing alternatives, benchmarking). Explain why when abandoning an approach.
   Do NOT use for routine work.
 - NEVER include Co-Authored-By in commit messages
-- Work on main only
