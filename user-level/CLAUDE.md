@@ -59,6 +59,9 @@ Every code file. Adapt comment syntax per language.
 - **Plan before multi-step work.** For any task involving 3+ files or multiple
   coordinated changes, use `Skill(superpowers:writing-plans)` and produce a
   written plan before touching code. Single-file changes don't need this.
+- **Strict scope.** Fix exactly what the task specifies. Do not
+  opportunistically refactor, reformat, or "clean up" adjacent code while
+  working on a task.
 
 ---
 
@@ -68,16 +71,8 @@ Every code file. Adapt comment syntax per language.
 - **CLI:** `argparse` with help text, epilog examples, sensible defaults, `--dry-run` for destructive ops.
 - **Error handling:** First draft, not follow-up. Every function doing I/O, network, or file ops.
 - **Error hints are mandatory.** Every raised exception must include a `hint` -
-  a human-friendly suggestion of what to check or do next. The technical detail
-  (exit codes, HTTP status, stderr) stays; the hint tells a non-technical user
-  what to actually do about it. Write the hint at the raise site where you have
-  the most context about what went wrong.
-  ```python
-  raise ServiceError(
-      "gws returned exit code 1 (stderr: 'token expired')",
-      hint="Try running 'gws auth login' to refresh your Google credentials"
-  )
-  ```
+  a human-friendly suggestion of what to check or do next. Write hints at the
+  raise site where you have most context.
 - **Type hints:** Mandatory on all public function signatures, method
   signatures, and module boundaries. Use `from __future__ import annotations`
   at the top of every Python file. Return types are not optional.
@@ -88,6 +83,9 @@ Every code file. Adapt comment syntax per language.
   in production. `pip freeze > requirements.txt` after adding any package.
 - **Comments:** WHY, not WHAT. Reasoning for non-obvious decisions. Never state the obvious.
 - **File size:** Propose extraction when approaching 300 lines. Do not keep adding features past this.
+- **Abstraction:** Do not abstract until code has been duplicated three times.
+  Three similar lines is better than a premature abstraction. Never build
+  generic factories or interfaces for a single use case.
 - **Naming:** Python filenames use underscores, never hyphens. All `.py` files, no exceptions.
 - **Commands:** Chain with `&&` on one line.
 - **Config extraction:** When moving hardcoded values to config, `grep -rn` the entire codebase for all references and update them in the same commit.
@@ -96,8 +94,8 @@ Every code file. Adapt comment syntax per language.
 
 ## Module Design
 
-For projects with 3+ source files and distinct responsibilities, apply modular
-structure. Full conventions in `.claude/skills/modular-design/SKILL.md`.
+For projects with 3+ source files. Full conventions in
+`.claude/skills/modular-design/SKILL.md`.
 
 **Five roles** (put code in the right place):
 - **Client** (`{service}_client.py`): Wraps one external service. All I/O lives here.
@@ -106,10 +104,12 @@ structure. Full conventions in `.claude/skills/modular-design/SKILL.md`.
 - **Output** (`{type}_writer.py`): Generates deliverables.
 - **Entrypoint** (`cli.py`): Thin orchestrator. Only file importing multiple modules.
 
-**Three hard rules:**
+**Four hard rules:**
 1. Processors have no I/O. If a test needs a mock, code is in the wrong layer.
 2. Pydantic at the edge only (in clients). Frozen dataclasses everywhere else.
 3. Modules raise exceptions. Entrypoint catches and decides.
+4. Composition over inheritance. No deep inheritance trees. Build complex
+   behaviour by combining simple, flat functions and classes.
 
 **Logging:** `logger = logging.getLogger(__name__)` in every module.
 `basicConfig()` in entrypoint only. No `print()` in modules.
@@ -118,15 +118,8 @@ structure. Full conventions in `.claude/skills/modular-design/SKILL.md`.
 
 ## Placeholders
 
-Mark ALL stubs, incomplete implementations, and mock data with `TODO:` comments. Mandatory.
-
-```python
-# TODO: Replace with actual API call - currently returns mock data
-def get_user_profile(user_id):
-    return {"name": "STUB_USER", "email": "stub@example.com"}
-```
-
-Distinguish `TODO:` (needs doing) from `NOTE:` (informational).
+Mark ALL stubs, incomplete implementations, and mock data with `TODO:` comments.
+Mandatory. Distinguish `TODO:` (needs doing) from `NOTE:` (informational).
 
 ---
 
