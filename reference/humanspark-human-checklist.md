@@ -26,6 +26,7 @@ This checklist captures what YOU do - the decisions, habits, and discipline that
 - [ ] **Decide the testing tier.** Is this Tier 1 (security/protocol - tests first), Tier 2 (feature - tests alongside), or Tier 3 (legacy gap-fill - tests after)? Make the decision explicitly, don't default to "I'll add tests later." (Rule 6.6)
 - [ ] **Run the "first code review" checkpoint.** Before sending a prompt to Claude Code, ask: "What would I correct on the first code review?" Then put those corrections into the prompt. Front-load: error handling patterns, CLI structure, logging approach, file paths, naming conventions. (Rule 7.2)
 - [ ] **Check file size before adding features.** Is the target file approaching 300 lines? If so, extract before adding more. (Rule 4.5)
+- [ ] **Scope the task tightly.** Tell Claude Code to fix exactly what's specified - no opportunistic refactoring of adjacent code. (Rule 13.3)
 
 ---
 
@@ -142,3 +143,5 @@ These aren't checkboxes - they're habits.
 **Prompts are code.** System prompts, CLAUDE.md, rules files - they get versioned, tested, and reviewed with the same discipline as Python. (Rule 1.3)
 
 **72% of failures are code, not prompts.** Prompt rules alone cannot fix the majority of issues. Code-level enforcement is the primary defence. (Rule 5.4)
+
+**Avoid hasty abstractions.** Don't let the AI build generic factories or deep inheritance for a single use case. Wait for three duplications before abstracting. Composition over inheritance, always. (Rules 13.1, 13.2)
