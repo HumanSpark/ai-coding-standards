@@ -922,6 +922,27 @@ that occur when modules each set up their own logging.
 
 ---
 
+## 13. AI-Specific Design Constraints
+
+Human coding standards and AI coding standards are not always identical. Some principles that make humans better developers - like anticipating future needs, opportunistically refactoring adjacent code, or building abstractions early - will cause an LLM to waste tokens, bloat the context window, or introduce scope creep. Conversely, LLMs are hardwired to be "helpful," which often translates to silently swallowing errors rather than failing fast (addressed by Rule 4.4 and the mandatory error hints in the user-level instructions). The following constraints address the specific, predictable failure modes of LLM-assisted development.
+
+### 13.1 Avoid Hasty Abstractions (Rule of Three)
+
+* **The Rule:** Do not build generic, highly abstracted factory classes or interfaces for a single use case. Wait until code has been duplicated at least three times before refactoring it into a shared abstraction.
+* **The AI Rationale:** LLMs tend to over-engineer and predict future feature needs that do not exist. Premature abstraction burns tokens, complicates the context window, and makes future prompt-driven modifications unnecessarily difficult.
+
+### 13.2 Composition Over Inheritance
+
+* **The Rule:** Build complex objects by combining simple, flat, plug-and-play functions and classes. Deep Object-Oriented inheritance trees (e.g., `BaseUser -> PaidUser -> AdminUser`) are prohibited.
+* **The AI Rationale:** Deep inheritance destroys an LLM's context window. It forces the AI to open and hold multiple files in memory just to understand or modify a single inherited method. Flat, composed code is significantly more "Claude-Code-efficient." This principle is operationalised in Section 12 (Modular Design) through the five standard module roles, which enforce flat composition at the architectural level.
+
+### 13.3 Strict Scope (Anti-Boy Scout Rule)
+
+* **The Rule:** Fix exactly what is outlined in the HANDOFF.md or the immediate prompt. Do not opportunistically refactor, reformat, or "clean up" adjacent code just because you are touching the file.
+* **The AI Rationale:** Telling an AI agent to "leave the code cleaner than you found it" results in massive, unrelated diffs. Scope creep is fatal in AI-assisted development; agents must execute the exact task specified and nothing more.
+
+---
+
 ## Appendix A: Rules Derivation
 
 Each rule in this document traces back to specific evidence. This appendix maps rules to their origin for future review and challenge.
@@ -970,3 +991,6 @@ Each rule in this document traces back to specific evidence. This appendix maps 
 | Agent authoring patterns (7.7) | code-reviewer agent: narrow scope, minimal frontmatter. Comparative analysis of shanraisshan/claude-code-best-practice: 14 frontmatter fields documented, feature-specific agents with preloaded skills pattern. |
 | Rules directory for instruction splitting (7.6) | shanraisshan/claude-code-best-practice: `.claude/rules/` auto-loads alongside CLAUDE.md, complementing token discipline by splitting always-loaded instructions without bloating CLAUDE.md. |
 | Settings and permission patterns (7.8) | shanraisshan/claude-code-best-practice: 5-level settings hierarchy, deny-always-wins rule, wildcard permission syntax. Aligns with Rule 1.4 (security as constraints). |
+| Avoid Hasty Abstractions (13.1) | Observed LLM over-engineering pattern: factory classes and interfaces built for single use cases across multiple projects. |
+| Composition Over Inheritance (13.2) | CC context window analysis: deep inheritance requires holding multiple files to understand a single method. Section 12 module roles enforce flat composition. |
+| Strict Scope (13.3) | Observed LLM scope creep: "clean up" instructions produce unrelated diffs. HANDOFF.md / prompt boundary enforcement. |
