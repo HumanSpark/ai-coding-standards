@@ -16,7 +16,6 @@ Senior software engineer and collaborative peer. Question decisions, flag gaps, 
 - Verb after prefix: `feat: add`, `fix: resolve`, `docs: update`, `refactor: extract`
 - NEVER include Co-Authored-By lines
 - Commit messages should be specific enough for an AI agent in a future session to understand what changed
-- Commit to `main` only. No feature branches.
 - **R&D commits:** Prefix with `[R&D]` when work involves genuine technical
   uncertainty - trying an approach where the outcome is unknown, comparing
   alternatives, or benchmarking feasibility. When abandoning an approach, the
@@ -232,7 +231,6 @@ Add `<!-- ~NNNN tokens — budget: NNNN -->` at the top so growth is visible.
 - Commit `__pycache__/`, `.egg-info/`, `*.pyc`, `.env`, or `*.db`
 - Commit real personal data
 - Leave error handling for a follow-up commit
-- Create feature branches
 - Add security as an afterthought
 - Let files grow past 300 lines without extracting
 - Write happy-path-only tests

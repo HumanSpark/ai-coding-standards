@@ -25,6 +25,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 6. **ccloop Planning Workflow (2026-03-16):** Added project-intake skill (structured interview with scope-aware triage, five phases, two-kind "I don't know" handling) and workplan-generation skill (spec validation, five specificity rules, stage gates, HANDOFF seeding). New SPEC-TEMPLATE.md as contract between skills. Updated setup.sh to deploy template and `docs/plans/` directory. Evidence: SparkCore Phase 2 (17 tasks, 195 tests, 53 minutes, 6 human commands) proved specific task descriptions are the key differentiator for autonomous execution quality.
 7. **Stage Gate Completion Fix (2026-03-17):** Cleaned workplan-generation skill stage gate instruction block to remove checkbox syntax that polluted grep-based task counting. Added checkpoint tracking rule (CC marks tasks `- [x]` as completed). Coordinated with ccloop v4.4.0 which tightened completion detection to exact "WORKPLAN COMPLETE" sentinel with unchecked-task verification. Evidence: SparkCore Phase 3 loop stopped prematurely at Stage 1 gate when CC output "Stage 1 tasks complete".
 8. **AI-Specific Design Constraints (2026-03-18):** Added Section 13 to reference doc (Rules 13.1-13.3) covering Avoid Hasty Abstractions, Composition Over Inheritance, and Strict Scope with dual Rule/AI-Rationale format. Tightened user-level CLAUDE.md: added three rules to existing sections (Code Style, Module Design, Development), removed code examples and redundant text to stay token-neutral. Evidence: observed LLM over-engineering, context window degradation from deep inheritance, scope creep from "clean up" instructions.
+9. **Remove Branching Restrictions (2026-03-18):** Removed all main-only and no-feature-branches directives from user-level CLAUDE.md, project template, and reference doc (old Rule 3.3). Renumbered Section 3 subsections and updated cross-references in human checklist. Coding assistants now decide branching strategy per-situation rather than following a blanket restriction.
 
 ## Build & Run
 
@@ -64,4 +65,3 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 
 - Conventional commits: feat/fix/docs/refactor/test/chore/ux
 - NEVER include Co-Authored-By in commit messages
-- Work on main only
