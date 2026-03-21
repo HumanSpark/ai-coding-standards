@@ -37,6 +37,7 @@ humanspark-standards/
 │       │   ├── project-intake/SKILL.md
 │       │   ├── workplan-generation/SKILL.md
 │       │   ├── agent-memory/SKILL.md
+│       │   ├── visual-review/SKILL.md
 │       │   └── modular-design/SKILL.md
 │       └── agents/
 │           └── code-reviewer.md
@@ -129,6 +130,8 @@ Forgejo/Gitea MCP server in stdio mode. Gives Claude Code native access to repos
 **project-intake:** Structured interview for capturing feature specs. Five phases (goal, scope, decisions, constraints, review) with scope-aware triage. Produces standard spec documents in `docs/plans/`.
 
 **workplan-generation:** Converts spec documents into ccloop-compatible WORKPLAN.md with specific, file-level tasks. Validates spec completeness, classifies tasks by module role, places stage gates at interface boundaries. Seeds HANDOFF.md with constraints.
+
+**visual-review:** Playwright-based screenshot and visual inspection for frontend changes. Contact sheet compositing for batch reviews, before/after comparisons, SSL handling, design evaluation dimensions.
 
 ### Agents
 

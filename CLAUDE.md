@@ -27,6 +27,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 8. **AI-Specific Design Constraints (2026-03-18):** Added Section 13 to reference doc (Rules 13.1-13.3) covering Avoid Hasty Abstractions, Composition Over Inheritance, and Strict Scope with dual Rule/AI-Rationale format. Tightened user-level CLAUDE.md: added three rules to existing sections (Code Style, Module Design, Development), removed code examples and redundant text to stay token-neutral. Evidence: observed LLM over-engineering, context window degradation from deep inheritance, scope creep from "clean up" instructions.
 9. **Remove Branching Restrictions (2026-03-18):** Removed all main-only and no-feature-branches directives from user-level CLAUDE.md, project template, and reference doc (old Rule 3.3). Renumbered Section 3 subsections and updated cross-references in human checklist. Coding assistants now decide branching strategy per-situation rather than following a blanket restriction.
 10. **Retire commitreader Repo (2026-03-18):** Absorbed R&D evidence report (12 repos, 1332 commits) into `docs/rd-evidence-report.md`. Deleted commitreader repo - it was a redundant copy of project-template/ with no source code.
+11. **Visual Review Skill (2026-03-21):** Added visual-review skill to project template. Playwright-based screenshot and visual inspection for frontend changes. Includes contact sheet compositing, before/after comparison, SSL handling, and design evaluation dimensions.
 
 ## Build & Run
 
@@ -54,6 +55,7 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 | project-template/.mcp.json | Forgejo MCP server config |
 | project-template/.claude/skills/modular-design/SKILL.md | Module boundary patterns and conventions |
 | project-template/.claude/skills/project-intake/SKILL.md | Structured interview producing spec documents |
+| project-template/.claude/skills/visual-review/SKILL.md | Playwright screenshot and visual review for frontend changes |
 | project-template/.claude/skills/workplan-generation/SKILL.md | Spec-to-WORKPLAN converter for ccloop execution |
 | project-template/docs/MODULE-README-TEMPLATE.md | Module contract template |
 | project-template/docs/SPEC-TEMPLATE.md | Feature spec template (contract between intake and workplan skills) |
