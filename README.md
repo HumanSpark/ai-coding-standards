@@ -43,7 +43,7 @@ humanspark-standards/
 │           └── code-reviewer.md
 │
 ├── docs/
-│   ├── rd-evidence-report.md                    - 12-repo, 1332-commit analysis
+│   ├── rd-evidence-report.md                    - 12-repo, 1332-commit analysis (gitignored)
 │   ├── APPLYING-TO-EXISTING-PROJECTS.md         - Guide for retrofitting standards
 │   └── plans/                                   - Implementation plans for this repo
 │
