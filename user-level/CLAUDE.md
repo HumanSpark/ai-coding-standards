@@ -1,4 +1,4 @@
-<!-- ~2400 tokens — budget: 3000 -->
+<!-- ~2600 tokens — budget: 3000 -->
 # HumanSpark AI Coding Instructions
 
 Standing instructions for all HumanSpark projects. Project-specific CLAUDE.md may override individual rules.
@@ -215,6 +215,22 @@ For package layouts, see `.claude/skills/modular-design/SKILL.md`.
 - NEVER use: delve, demystify, foster, leverage, utilize
 - NEVER use em dashes. Use " - " (space-dash-space)
 - Markdown or HTML. Never Word format.
+
+---
+
+## Quality Standards
+
+- After any git history rewrite or secrets cleanup, audit ALL commit
+  messages, docs, and comments to ensure no references to the secret
+  or 'contains secrets' language remain.
+- When reporting project status, always verify claims by actually
+  checking file contents/timestamps - never report repos as 'up to
+  date' without diffing against the source of truth.
+- When refactoring, preserve lazy evaluation patterns
+  (generators/yields). Never replace `yield` with eager list
+  materialization without explicit approval.
+- For external API calls or tool integrations, verify parameters
+  against docs or existing config before implementing.
 
 ---
 
