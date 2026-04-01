@@ -28,6 +28,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 9. **Remove Branching Restrictions (2026-03-18):** Removed all main-only and no-feature-branches directives from user-level CLAUDE.md, project template, and reference doc (old Rule 3.3). Renumbered Section 3 subsections and updated cross-references in human checklist. Coding assistants now decide branching strategy per-situation rather than following a blanket restriction.
 10. **Retire commitreader Repo (2026-03-18):** R&D evidence report (12 repos, 1332 commits) kept locally as `docs/rd-evidence-report.md` (gitignored). Deleted commitreader repo - it was a redundant copy of project-template/ with no source code.
 11. **Visual Review Skill (2026-03-21):** Added visual-review skill to project template. Playwright-based screenshot and visual inspection for frontend changes. Includes contact sheet compositing, before/after comparison, SSL handling, and design evaluation dimensions.
+12. **Tool Discipline & Context Safety (2026-04-01):** Added five Development rules to user-level CLAUDE.md: clean before refactoring, guard against context decay, verify edits applied, assume tool output is truncated, sub-agents for independent work only. Extracted "CLAUDE.md as Code" section to `user-level/rules/claude-md-discipline.md` to offset token growth. Updated setup.sh to deploy user-level rules files. Net effect: main file shrank by ~200 tokens while gaining five new rules. Evidence: analysis of Claude Code's actual tool behaviour and silent failure modes.
 
 ## Build & Run
 
@@ -46,6 +47,7 @@ No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspe
 |------|-------------|
 | setup.sh | Deployer script - user-level + project initialisation |
 | user-level/CLAUDE.md | Universal AI instructions (-> ~/.claude/CLAUDE.md) |
+| user-level/rules/claude-md-discipline.md | CLAUDE.md maintenance rules (-> ~/.claude/rules/) |
 | project-template/CLAUDE.md | Stage 4 project context template |
 | project-template/.gitignore | Template gitignore (includes CLAUDE.local.md) |
 | project-template/HANDOFF.md | Session handoff template for multi-session work |

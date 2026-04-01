@@ -1,3 +1,4 @@
+<!-- ~2400 tokens — budget: 3000 -->
 # HumanSpark AI Coding Instructions
 
 Standing instructions for all HumanSpark projects. Project-specific CLAUDE.md may override individual rules.
@@ -61,6 +62,35 @@ Every code file. Adapt comment syntax per language.
 - **Strict scope.** Fix exactly what the task specifies. Do not
   opportunistically refactor, reformat, or "clean up" adjacent code while
   working on a task.
+- **Clean before refactoring.** Before any structural refactor on a file over
+  300 lines, first remove dead code: unused imports, unused functions, debug
+  logs, commented-out blocks. Commit this cleanup separately before starting
+  the real refactor. Dead code wastes context window tokens and makes diffs
+  harder to review.
+- **Guard against context decay.** After 10+ tool uses in a single session,
+  re-read any file before editing it. Auto-compaction silently drops file
+  contents from context, and you will edit against stale state without
+  realising. Do not trust your memory of a file's contents - re-read it.
+- **Verify edits applied.** After every file edit, re-read the file to confirm
+  the change landed correctly. The edit tool fails silently when `old_string`
+  does not match due to stale context - the file is unchanged but no error is
+  reported. Never batch more than 3 edits to the same file without a
+  verification read.
+- **Assume tool output is truncated.** Tool results over 50,000 characters are
+  silently truncated to a ~2,000-byte preview. If any grep, test run, or
+  command output returns suspiciously few results or seems incomplete, re-run
+  with narrower scope (single directory, stricter glob, specific test file).
+  State when you suspect truncation occurred rather than drawing conclusions
+  from partial output.
+- **Sub-agents: use for independent work only.** For tasks touching many files,
+  consider parallel sub-agents - but only when the files are genuinely
+  independent. Each sub-agent gets its own context window and cannot see what
+  other agents are doing. Safe: updating README files across projects, adding
+  file headers to unrelated modules, running independent test suites. Unsafe:
+  any files that share imports, consume the same SparkCore types, or sit on
+  the same Layer 1/2/3 dependency chain. When in doubt, work sequentially.
+  If using sub-agents, list which files each agent owns and confirm there are
+  no cross-agent import dependencies before launching.
 
 ---
 
@@ -175,44 +205,6 @@ config.py             - Typed config with from_env()
 ```
 
 For package layouts, see `.claude/skills/modular-design/SKILL.md`.
-
----
-
-## CLAUDE.md as Code
-
-CLAUDE.md is an LLM-facing document, not a human reference. Humans read
-README.md. Every token in CLAUDE.md is loaded into every conversation, costs
-money, and dilutes attention. Treat it like code: budget tokens, review growth.
-
-**Token budgets:** Small projects < 2,000 tokens, medium < 4,000, large < 6,000.
-Add `<!-- ~NNNN tokens — budget: NNNN -->` at the top so growth is visible.
-
-**Three tiers of context:**
-1. **Always loaded** (`CLAUDE.md` + `.claude/rules/*.md`): Design philosophy,
-   architecture, build/run, testing, security, active gotchas, key files
-   (top 10-15). Use rules files to split instructions that would push
-   CLAUDE.md past its token budget.
-2. **On demand** (skills, `docs/*.md`): Detailed patterns, module contracts,
-   reference gotchas. Loaded when working in the relevant area.
-3. **Archival** (`docs/HISTORY.md`, git log): Evolution history, completed
-   phases. Never auto-loaded.
-
-**What moves out when CLAUDE.md grows:**
-- Standalone instruction sets (deployment rules, formatting rules) ->
-  `.claude/rules/*.md` (still always-loaded, but keeps CLAUDE.md focused).
-- "How It Evolved" past ~5 entries -> `docs/HISTORY.md`, keep 3-line summary.
-- Reference gotchas (edge cases for specific subsystems) -> `docs/REFERENCE-GOTCHAS.md`.
-- Exhaustive key files tables (20+ files) -> keep top 10-15, full list in README.md.
-- Deduplicate across sections - gotchas that restate security boundaries or key
-  patterns should be consolidated into the most authoritative section.
-
-**Four edit types:**
-- **Phase completion:** Append to "How It Evolved" (or `docs/HISTORY.md` if
-  overflowing), update test count, add key files if top-15 worthy.
-- **Architectural correction:** Update key flow and component descriptions.
-- **Gotcha addition:** Add to "Things to Watch Out For" if it affects everyday
-  development. Subsystem-specific gotchas go in `docs/REFERENCE-GOTCHAS.md`.
-- **Philosophy refinement:** Update "keep strict" / "free to adapt".
 
 ---
 

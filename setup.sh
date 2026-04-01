@@ -3,12 +3,14 @@
 # Purpose: Deploy HumanSpark engineering standards to user and project level.
 # Project: HumanSpark Engineering Standards | Date: 2026-03-12
 #
-# Overview: Copies user-level CLAUDE.md to ~/.claude/ (applies to all projects).
-# Optionally copies project template files into a target project directory.
-# With --update, merges new deny/allow rules into existing settings.json and
-# appends missing entries to .gitignore without overwriting project customizations.
-# Checks for forgejo-mcp binary and env credentials.
-# Never overwrites project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json).
+# Overview: Copies user-level CLAUDE.md and rules to ~/.claude/ (applies to all
+# projects). Optionally copies project template files into a target project
+# directory. With --update, merges new deny/allow rules into existing
+# settings.json and appends missing entries to .gitignore without overwriting
+# project customizations. With --sync, also updates content of existing
+# template-managed files (skills, agents, non-customized rules).
+# Never overwrites project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json,
+# deployment.md if customized).
 
 set -euo pipefail
 
@@ -16,6 +18,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- Parse flags ---
 UPDATE_MODE=false
+SYNC_MODE=false
 DRY_RUN=false
 TARGET=""
 
@@ -25,13 +28,18 @@ while [[ $# -gt 0 ]]; do
             UPDATE_MODE=true
             shift
             ;;
+        --sync)
+            SYNC_MODE=true
+            UPDATE_MODE=true  # --sync implies --update
+            shift
+            ;;
         --dry-run)
             DRY_RUN=true
             shift
             ;;
         -*)
             echo "Unknown flag: $1"
-            echo "Usage: ./setup.sh [--update] [--dry-run] [/path/to/project]"
+            echo "Usage: ./setup.sh [--update] [--sync] [--dry-run] [/path/to/project]"
             exit 1
             ;;
         *)
@@ -42,7 +50,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 echo "=== HumanSpark Standards Setup ==="
-if $UPDATE_MODE; then
+if $SYNC_MODE; then
+    echo "    Mode: SYNC (update + overwrite stale template-managed files)"
+elif $UPDATE_MODE; then
     echo "    Mode: UPDATE (merge new rules into existing files)"
 fi
 if $DRY_RUN; then
@@ -58,10 +68,32 @@ if $DRY_RUN; then
     else
         echo "   Would update: ~/.claude/CLAUDE.md"
     fi
+    # Check user-level rules files
+    if [ -d "$SCRIPT_DIR/user-level/rules" ]; then
+        for rule in "$SCRIPT_DIR"/user-level/rules/*.md; do
+            [ -f "$rule" ] || continue
+            rule_name=$(basename "$rule")
+            if diff -q "$rule" ~/.claude/rules/"$rule_name" &>/dev/null 2>&1; then
+                echo "   No changes to ~/.claude/rules/$rule_name"
+            else
+                echo "   Would update: ~/.claude/rules/$rule_name"
+            fi
+        done
+    fi
 else
     mkdir -p ~/.claude
     cp "$SCRIPT_DIR/user-level/CLAUDE.md" ~/.claude/CLAUDE.md
     echo "   Installed: ~/.claude/CLAUDE.md"
+    # Deploy user-level rules files
+    if [ -d "$SCRIPT_DIR/user-level/rules" ]; then
+        mkdir -p ~/.claude/rules
+        for rule in "$SCRIPT_DIR"/user-level/rules/*.md; do
+            [ -f "$rule" ] || continue
+            rule_name=$(basename "$rule")
+            cp "$rule" ~/.claude/rules/"$rule_name"
+            echo "   Installed: ~/.claude/rules/$rule_name"
+        done
+    fi
 fi
 echo ""
 
@@ -286,6 +318,70 @@ if [ -n "$TARGET" ]; then
                 fi
             fi
         done
+
+        # --- Sync mode: update content of existing template-managed files ---
+        if $SYNC_MODE; then
+            # Sync skills (overwrite SKILL.md if content differs)
+            for skill_dir in "$SCRIPT_DIR"/project-template/.claude/skills/*/; do
+                skill_name=$(basename "$skill_dir")
+                target="$TARGET/.claude/skills/$skill_name/SKILL.md"
+                template="$skill_dir/SKILL.md"
+                if [ -f "$target" ] && [ -f "$template" ]; then
+                    if ! diff -q "$template" "$target" &>/dev/null; then
+                        if $DRY_RUN; then
+                            echo "   Would sync: .claude/skills/$skill_name/SKILL.md"
+                        else
+                            cp "$template" "$target"
+                            echo "   Synced: .claude/skills/$skill_name/SKILL.md"
+                        fi
+                    fi
+                fi
+            done
+
+            # Sync agents (overwrite if content differs)
+            for agent in "$SCRIPT_DIR"/project-template/.claude/agents/*.md; do
+                agent_name=$(basename "$agent")
+                target="$TARGET/.claude/agents/$agent_name"
+                if [ -f "$target" ]; then
+                    if ! diff -q "$agent" "$target" &>/dev/null; then
+                        if $DRY_RUN; then
+                            echo "   Would sync: .claude/agents/$agent_name"
+                        else
+                            cp "$agent" "$target"
+                            echo "   Synced: .claude/agents/$agent_name"
+                        fi
+                    fi
+                fi
+            done
+
+            # Sync rules EXCEPT deployment.md (likely project-customized)
+            for rule in "$SCRIPT_DIR"/project-template/.claude/rules/*.md; do
+                rule_name=$(basename "$rule")
+                target="$TARGET/.claude/rules/$rule_name"
+                if [ "$rule_name" = "deployment.md" ] && [ -f "$target" ]; then
+                    # Only sync deployment.md if it still contains template placeholders
+                    if grep -q '{describe production' "$target" 2>/dev/null; then
+                        if ! diff -q "$rule" "$target" &>/dev/null; then
+                            if $DRY_RUN; then
+                                echo "   Would sync: .claude/rules/$rule_name (uncustomized)"
+                            else
+                                cp "$rule" "$target"
+                                echo "   Synced: .claude/rules/$rule_name (uncustomized)"
+                            fi
+                        fi
+                    fi
+                elif [ -f "$target" ]; then
+                    if ! diff -q "$rule" "$target" &>/dev/null; then
+                        if $DRY_RUN; then
+                            echo "   Would sync: .claude/rules/$rule_name"
+                        else
+                            cp "$rule" "$target"
+                            echo "   Synced: .claude/rules/$rule_name"
+                        fi
+                    fi
+                fi
+            done
+        fi
 
         # Create docs/plans/ directory and deploy docs templates
         if ! $DRY_RUN; then
