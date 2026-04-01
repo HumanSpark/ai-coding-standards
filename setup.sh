@@ -96,6 +96,44 @@ else
 fi
 echo ""
 
+# --- User-level git hooks ---
+HOOKS_SRC="$SCRIPT_DIR/user-level/hooks"
+HOOKS_DEST="$HOME/.config/git/hooks"
+
+if [ -d "$HOOKS_SRC" ]; then
+    echo "2. Deploying user-level git hooks..."
+    if $DRY_RUN; then
+        for hook in "$HOOKS_SRC"/*; do
+            [ -f "$hook" ] || continue
+            hook_name=$(basename "$hook")
+            if diff -q "$hook" "$HOOKS_DEST/$hook_name" &>/dev/null 2>&1; then
+                echo "   No changes to $HOOKS_DEST/$hook_name"
+            else
+                echo "   Would install: $HOOKS_DEST/$hook_name"
+            fi
+        done
+        current_path=$(git config --global core.hooksPath 2>/dev/null || true)
+        if [ "$current_path" != "$HOOKS_DEST" ]; then
+            echo "   Would set: git core.hooksPath -> $HOOKS_DEST"
+        fi
+    else
+        mkdir -p "$HOOKS_DEST"
+        for hook in "$HOOKS_SRC"/*; do
+            [ -f "$hook" ] || continue
+            hook_name=$(basename "$hook")
+            cp "$hook" "$HOOKS_DEST/$hook_name"
+            chmod +x "$HOOKS_DEST/$hook_name"
+            echo "   Installed: $HOOKS_DEST/$hook_name"
+        done
+        current_path=$(git config --global core.hooksPath 2>/dev/null || true)
+        if [ "$current_path" != "$HOOKS_DEST" ]; then
+            git config --global core.hooksPath "$HOOKS_DEST"
+            echo "   Set: git core.hooksPath -> $HOOKS_DEST"
+        fi
+    fi
+    echo ""
+fi
+
 # --- Helper: merge settings.json (additive only) ---
 merge_settings_json() {
     local target_file="$1"
@@ -371,7 +409,7 @@ discover_projects() {
 }
 
 # --- Project-level deployment ---
-echo "2. Project-level sync..."
+echo "3. Project-level sync..."
 
 if [ ${#TARGETS[@]} -gt 0 ]; then
     # Explicit target(s) provided
