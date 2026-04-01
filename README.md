@@ -12,7 +12,11 @@ humanspark-standards/
 ├── .gitignore
 │
 ├── user-level/
-│   └── CLAUDE.md                - Universal AI instructions (-> ~/.claude/CLAUDE.md)
+│   ├── CLAUDE.md                - Universal AI instructions (-> ~/.claude/CLAUDE.md)
+│   ├── rules/
+│   │   └── claude-md-discipline.md  - CLAUDE.md maintenance rules (-> ~/.claude/rules/)
+│   └── hooks/
+│       └── pre-commit           - Blocks secrets, sensitive filenames, personal emails
 │
 ├── project-template/
 │   ├── CLAUDE.md                - Project context template (Stage 4)
@@ -80,7 +84,10 @@ Won't overwrite existing files - only creates what's missing.
 ## What Each Component Does
 
 ### User-Level: `~/.claude/CLAUDE.md`
-Universal AI instructions. Covers: role, git conventions, file headers, development discipline (TDD, debugging, verification, strict scope), code style (including anti-premature-abstraction), module design (composition over inheritance), placeholders, security, testing, project structure, CLAUDE.md maintenance, writing style, and a "do not" list.
+Universal AI instructions. Covers: role, git conventions, file headers, development discipline (TDD, debugging, verification, strict scope), code style (including anti-premature-abstraction), module design (composition over inheritance), placeholders, security, testing, project structure, writing style, quality standards, and a "do not" list.
+
+### User-Level: Pre-Commit Hook
+Git hook deployed to `~/.config/git/hooks/` via `core.hooksPath`. Blocks commits containing sensitive filenames (financial_summary, credentials, .env.shared), secrets in diffs (password=, api_key=, Bearer tokens, AWS keys), and warns on personal email addresses in non-test files. Override with `git commit --no-verify` when intentional.
 
 ### Project Template: `CLAUDE.md`
 Stage 4 template with: design philosophy (strict vs free-to-adapt), evolution history (append-only changelog), build/run commands, testing, architecture, key files, security boundaries, key patterns, gotchas, git conventions.
