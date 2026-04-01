@@ -28,18 +28,20 @@ This system captures how we actually work, not how we aspire to work. Every rule
 9. **Remove Branching Restrictions (2026-03-18):** Removed all main-only and no-feature-branches directives from user-level CLAUDE.md, project template, and reference doc (old Rule 3.3). Renumbered Section 3 subsections and updated cross-references in human checklist. Coding assistants now decide branching strategy per-situation rather than following a blanket restriction.
 10. **Retire commitreader Repo (2026-03-18):** R&D evidence report (12 repos, 1332 commits) kept locally as `docs/rd-evidence-report.md` (gitignored). Deleted commitreader repo - it was a redundant copy of project-template/ with no source code.
 11. **Visual Review Skill (2026-03-21):** Added visual-review skill to project template. Playwright-based screenshot and visual inspection for frontend changes. Includes contact sheet compositing, before/after comparison, SSL handling, and design evaluation dimensions.
-12. **Tool Discipline & Context Safety (2026-04-01):** Added five Development rules to user-level CLAUDE.md: clean before refactoring, guard against context decay, verify edits applied, assume tool output is truncated, sub-agents for independent work only. Extracted "CLAUDE.md as Code" section to `user-level/rules/claude-md-discipline.md` to offset token growth. Updated setup.sh to deploy user-level rules files. Net effect: main file shrank by ~200 tokens while gaining five new rules. Evidence: analysis of Claude Code's actual tool behaviour and silent failure modes.
+12. **Tool Discipline & Setup Overhaul (2026-04-01):** Added five Development rules to user-level CLAUDE.md: clean before refactoring, guard against context decay, verify edits applied, assume tool output is truncated, sub-agents for independent work only. Extracted "CLAUDE.md as Code" section to `user-level/rules/claude-md-discipline.md` to offset token growth. Rewrote setup.sh: sync is now the default (creates missing + updates stale template-managed files), auto-discovers all projects when no target given, `--init` for new projects only. Eliminated the old --update/--sync split. Evidence: analysis of Claude Code's actual tool behaviour; found 11/13 projects running stale skills after template updates because --update never refreshed existing files.
 
 ## Build & Run
 
 ```bash
-./setup.sh                    # Deploy user-level ~/.claude/CLAUDE.md
-./setup.sh ~/path/to/project  # Initialise project-level config
+./setup.sh                         # Sync user-level + all projects (auto-discover)
+./setup.sh ~/path/to/project       # Sync user-level + one project
+./setup.sh --init ~/new-project    # Sync + create project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json)
+./setup.sh --dry-run               # Preview any of the above without applying
 ```
 
 ## Testing
 
-No automated tests. Validate by running `./setup.sh /tmp/test-project` and inspecting output.
+No automated tests. Validate by running `./setup.sh --init --dry-run /tmp/test-project` and inspecting output.
 
 ## Key Files
 

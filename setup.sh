@@ -3,34 +3,37 @@
 # Purpose: Deploy HumanSpark engineering standards to user and project level.
 # Project: HumanSpark Engineering Standards | Date: 2026-03-12
 #
-# Overview: Copies user-level CLAUDE.md and rules to ~/.claude/ (applies to all
-# projects). Optionally copies project template files into a target project
-# directory. With --update, merges new deny/allow rules into existing
-# settings.json and appends missing entries to .gitignore without overwriting
-# project customizations. With --sync, also updates content of existing
-# template-managed files (skills, agents, non-customized rules).
-# Never overwrites project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json,
-# deployment.md if customized).
+# Overview: Deploys user-level CLAUDE.md and rules to ~/.claude/. Syncs all
+# project-level template-managed files (skills, agents, rules, docs templates)
+# by default - creates missing files and updates stale ones. With --init,
+# also creates project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json) that
+# are never touched during normal sync. With no target, auto-discovers all
+# projects in home directory.
+#
+# Usage:
+#   ./setup.sh                           Sync user-level + all projects
+#   ./setup.sh ~/project                 Sync user-level + one project
+#   ./setup.sh --init ~/new-project      Sync + create project-specific files
+#   ./setup.sh --dry-run                 Preview changes without applying
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TEMPLATE_DIR="$SCRIPT_DIR/project-template"
 
 # --- Parse flags ---
-UPDATE_MODE=false
-SYNC_MODE=false
+INIT_MODE=false
 DRY_RUN=false
-TARGET=""
+TARGETS=()
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --update)
-            UPDATE_MODE=true
+        --init)
+            INIT_MODE=true
             shift
             ;;
-        --sync)
-            SYNC_MODE=true
-            UPDATE_MODE=true  # --sync implies --update
+        --update|--sync)
+            # Backwards compat - sync is now the default, these are no-ops
             shift
             ;;
         --dry-run)
@@ -39,21 +42,19 @@ while [[ $# -gt 0 ]]; do
             ;;
         -*)
             echo "Unknown flag: $1"
-            echo "Usage: ./setup.sh [--update] [--sync] [--dry-run] [/path/to/project]"
+            echo "Usage: ./setup.sh [--init] [--dry-run] [/path/to/project ...]"
             exit 1
             ;;
         *)
-            TARGET="$1"
+            TARGETS+=("$1")
             shift
             ;;
     esac
 done
 
 echo "=== HumanSpark Standards Setup ==="
-if $SYNC_MODE; then
-    echo "    Mode: SYNC (update + overwrite stale template-managed files)"
-elif $UPDATE_MODE; then
-    echo "    Mode: UPDATE (merge new rules into existing files)"
+if $INIT_MODE; then
+    echo "    Mode: INIT (sync + create project-specific files)"
 fi
 if $DRY_RUN; then
     echo "    Mode: DRY RUN (show changes without applying)"
@@ -68,7 +69,6 @@ if $DRY_RUN; then
     else
         echo "   Would update: ~/.claude/CLAUDE.md"
     fi
-    # Check user-level rules files
     if [ -d "$SCRIPT_DIR/user-level/rules" ]; then
         for rule in "$SCRIPT_DIR"/user-level/rules/*.md; do
             [ -f "$rule" ] || continue
@@ -84,7 +84,6 @@ else
     mkdir -p ~/.claude
     cp "$SCRIPT_DIR/user-level/CLAUDE.md" ~/.claude/CLAUDE.md
     echo "   Installed: ~/.claude/CLAUDE.md"
-    # Deploy user-level rules files
     if [ -d "$SCRIPT_DIR/user-level/rules" ]; then
         mkdir -p ~/.claude/rules
         for rule in "$SCRIPT_DIR"/user-level/rules/*.md; do
@@ -234,379 +233,221 @@ merge_gitignore() {
     fi
 }
 
-# --- Project-level deployment ---
-if [ -n "$TARGET" ]; then
-    if [ ! -d "$TARGET" ]; then
-        echo "   ERROR: $TARGET is not a directory"
-        exit 1
+# --- Helper: create or sync a file ---
+# Creates the file if missing, updates it if stale. Reports action taken.
+create_or_sync() {
+    local template="$1"
+    local target="$2"
+    local label="$3"
+    local dry_run="$4"
+
+    if [ ! -f "$target" ]; then
+        if $dry_run; then
+            echo "   Would create: $label"
+        else
+            mkdir -p "$(dirname "$target")"
+            cp "$template" "$target"
+            echo "   Created: $label"
+        fi
+    elif ! diff -q "$template" "$target" &>/dev/null; then
+        if $dry_run; then
+            echo "   Would sync: $label"
+        else
+            cp "$template" "$target"
+            echo "   Synced: $label"
+        fi
+    fi
+}
+
+# --- Helper: sync one project ---
+sync_project() {
+    local target="$1"
+    local dry_run="$2"
+
+    # Ensure directories exist
+    if ! $dry_run; then
+        mkdir -p "$target/.claude/skills" "$target/.claude/agents" "$target/.claude/rules"
     fi
 
-    if $UPDATE_MODE; then
-        # === UPDATE MODE: merge into existing files ===
-        echo "4. Updating project: $TARGET"
-
-        # Ensure directories exist
-        if ! $DRY_RUN; then
-            mkdir -p "$TARGET/.claude/skills" "$TARGET/.claude/agents" "$TARGET/.claude/rules"
-        fi
-
-        # Merge settings.json
-        if [ -f "$TARGET/.claude/settings.json" ]; then
-            merge_settings_json \
-                "$TARGET/.claude/settings.json" \
-                "$SCRIPT_DIR/project-template/.claude/settings.json" \
-                "$DRY_RUN"
-        else
-            if $DRY_RUN; then
-                echo "   Would create: .claude/settings.json"
-            else
-                cp "$SCRIPT_DIR/project-template/.claude/settings.json" "$TARGET/.claude/settings.json"
-                echo "   Created: .claude/settings.json"
-            fi
-        fi
-
-        # Merge .gitignore
-        if [ -f "$TARGET/.gitignore" ]; then
-            merge_gitignore \
-                "$TARGET/.gitignore" \
-                "$SCRIPT_DIR/project-template/.gitignore" \
-                "$DRY_RUN"
-        else
-            if $DRY_RUN; then
-                echo "   Would create: .gitignore"
-            else
-                cp "$SCRIPT_DIR/project-template/.gitignore" "$TARGET/.gitignore"
-                echo "   Created: .gitignore"
-            fi
-        fi
-
-        # Create missing rules (same as init - never overwrites)
-        for rule in "$SCRIPT_DIR"/project-template/.claude/rules/*.md; do
-            rule_name=$(basename "$rule")
-            if [ ! -f "$TARGET/.claude/rules/$rule_name" ]; then
-                if $DRY_RUN; then
-                    echo "   Would create: .claude/rules/$rule_name"
-                else
-                    cp "$rule" "$TARGET/.claude/rules/$rule_name"
-                    echo "   Created: .claude/rules/$rule_name"
-                fi
-            fi
-        done
-
-        # Create missing skills (same as init - never overwrites)
-        for skill_dir in "$SCRIPT_DIR"/project-template/.claude/skills/*/; do
-            skill_name=$(basename "$skill_dir")
-            if [ ! -d "$TARGET/.claude/skills/$skill_name" ]; then
-                if $DRY_RUN; then
-                    echo "   Would create: .claude/skills/$skill_name/"
-                else
-                    cp -r "$skill_dir" "$TARGET/.claude/skills/$skill_name"
-                    echo "   Created: .claude/skills/$skill_name/"
-                fi
-            fi
-        done
-
-        # Create missing agents (same as init - never overwrites)
-        for agent in "$SCRIPT_DIR"/project-template/.claude/agents/*.md; do
-            agent_name=$(basename "$agent")
-            if [ ! -f "$TARGET/.claude/agents/$agent_name" ]; then
-                if $DRY_RUN; then
-                    echo "   Would create: .claude/agents/$agent_name"
-                else
-                    cp "$agent" "$TARGET/.claude/agents/$agent_name"
-                    echo "   Created: .claude/agents/$agent_name"
-                fi
-            fi
-        done
-
-        # --- Sync mode: update content of existing template-managed files ---
-        if $SYNC_MODE; then
-            # Sync skills (overwrite SKILL.md if content differs)
-            for skill_dir in "$SCRIPT_DIR"/project-template/.claude/skills/*/; do
-                skill_name=$(basename "$skill_dir")
-                target="$TARGET/.claude/skills/$skill_name/SKILL.md"
-                template="$skill_dir/SKILL.md"
-                if [ -f "$target" ] && [ -f "$template" ]; then
-                    if ! diff -q "$template" "$target" &>/dev/null; then
-                        if $DRY_RUN; then
-                            echo "   Would sync: .claude/skills/$skill_name/SKILL.md"
-                        else
-                            cp "$template" "$target"
-                            echo "   Synced: .claude/skills/$skill_name/SKILL.md"
-                        fi
-                    fi
-                fi
-            done
-
-            # Sync agents (overwrite if content differs)
-            for agent in "$SCRIPT_DIR"/project-template/.claude/agents/*.md; do
-                agent_name=$(basename "$agent")
-                target="$TARGET/.claude/agents/$agent_name"
-                if [ -f "$target" ]; then
-                    if ! diff -q "$agent" "$target" &>/dev/null; then
-                        if $DRY_RUN; then
-                            echo "   Would sync: .claude/agents/$agent_name"
-                        else
-                            cp "$agent" "$target"
-                            echo "   Synced: .claude/agents/$agent_name"
-                        fi
-                    fi
-                fi
-            done
-
-            # Sync rules EXCEPT deployment.md (likely project-customized)
-            for rule in "$SCRIPT_DIR"/project-template/.claude/rules/*.md; do
-                rule_name=$(basename "$rule")
-                target="$TARGET/.claude/rules/$rule_name"
-                if [ "$rule_name" = "deployment.md" ] && [ -f "$target" ]; then
-                    # Only sync deployment.md if it still contains template placeholders
-                    if grep -q '{describe production' "$target" 2>/dev/null; then
-                        if ! diff -q "$rule" "$target" &>/dev/null; then
-                            if $DRY_RUN; then
-                                echo "   Would sync: .claude/rules/$rule_name (uncustomized)"
-                            else
-                                cp "$rule" "$target"
-                                echo "   Synced: .claude/rules/$rule_name (uncustomized)"
-                            fi
-                        fi
-                    fi
-                elif [ -f "$target" ]; then
-                    if ! diff -q "$rule" "$target" &>/dev/null; then
-                        if $DRY_RUN; then
-                            echo "   Would sync: .claude/rules/$rule_name"
-                        else
-                            cp "$rule" "$target"
-                            echo "   Synced: .claude/rules/$rule_name"
-                        fi
-                    fi
-                fi
-            done
-        fi
-
-        # Create docs/plans/ directory and deploy docs templates
-        if ! $DRY_RUN; then
-            mkdir -p "$TARGET/docs/plans"
-        fi
-        if [ ! -f "$TARGET/docs/plans/.gitkeep" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: docs/plans/.gitkeep"
-            else
-                touch "$TARGET/docs/plans/.gitkeep"
-                echo "   Created: docs/plans/.gitkeep"
-            fi
-        fi
-
-        # Deploy docs templates (create-if-missing)
-        for doc_template in MODULE-README-TEMPLATE.md SPEC-TEMPLATE.md; do
-            if [ ! -f "$TARGET/docs/$doc_template" ]; then
-                if [ -f "$SCRIPT_DIR/project-template/docs/$doc_template" ]; then
-                    if $DRY_RUN; then
-                        echo "   Would create: docs/$doc_template"
-                    else
-                        cp "$SCRIPT_DIR/project-template/docs/$doc_template" "$TARGET/docs/$doc_template"
-                        echo "   Created: docs/$doc_template"
-                    fi
-                fi
-            fi
-        done
-
-        echo ""
-        echo "   Project updated. Skipped: CLAUDE.md, HANDOFF.md, .mcp.json (project-specific)"
+    # settings.json: merge if exists, create if missing
+    if [ -f "$target/.claude/settings.json" ]; then
+        merge_settings_json \
+            "$target/.claude/settings.json" \
+            "$TEMPLATE_DIR/.claude/settings.json" \
+            "$dry_run"
     else
-        # === INIT MODE: create missing files only ===
-        echo "4. Initialising project: $TARGET"
-
-        # Create directories
-        if ! $DRY_RUN; then
-            mkdir -p "$TARGET/.claude/skills" "$TARGET/.claude/agents" "$TARGET/.claude/rules"
-        fi
-
-        # Copy settings.json
-        if [ ! -f "$TARGET/.claude/settings.json" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: .claude/settings.json"
-            else
-                cp "$SCRIPT_DIR/project-template/.claude/settings.json" "$TARGET/.claude/settings.json"
-                echo "   Created: .claude/settings.json"
-            fi
-        else
-            echo "   Exists:  .claude/settings.json (skipped)"
-        fi
-
-        # Copy skills
-        for skill_dir in "$SCRIPT_DIR"/project-template/.claude/skills/*/; do
-            skill_name=$(basename "$skill_dir")
-            if [ ! -d "$TARGET/.claude/skills/$skill_name" ]; then
-                if $DRY_RUN; then
-                    echo "   Would create: .claude/skills/$skill_name/"
-                else
-                    cp -r "$skill_dir" "$TARGET/.claude/skills/$skill_name"
-                    echo "   Created: .claude/skills/$skill_name/"
-                fi
-            else
-                echo "   Exists:  .claude/skills/$skill_name/ (skipped)"
-            fi
-        done
-
-        # Copy rules
-        for rule in "$SCRIPT_DIR"/project-template/.claude/rules/*.md; do
-            rule_name=$(basename "$rule")
-            if [ ! -f "$TARGET/.claude/rules/$rule_name" ]; then
-                if $DRY_RUN; then
-                    echo "   Would create: .claude/rules/$rule_name"
-                else
-                    cp "$rule" "$TARGET/.claude/rules/$rule_name"
-                    echo "   Created: .claude/rules/$rule_name"
-                fi
-            else
-                echo "   Exists:  .claude/rules/$rule_name (skipped)"
-            fi
-        done
-
-        # Copy agents
-        for agent in "$SCRIPT_DIR"/project-template/.claude/agents/*.md; do
-            agent_name=$(basename "$agent")
-            if [ ! -f "$TARGET/.claude/agents/$agent_name" ]; then
-                if $DRY_RUN; then
-                    echo "   Would create: .claude/agents/$agent_name"
-                else
-                    cp "$agent" "$TARGET/.claude/agents/$agent_name"
-                    echo "   Created: .claude/agents/$agent_name"
-                fi
-            else
-                echo "   Exists:  .claude/agents/$agent_name (skipped)"
-            fi
-        done
-
-        # Copy .mcp.json
-        if [ ! -f "$TARGET/.mcp.json" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: .mcp.json"
-            else
-                cp "$SCRIPT_DIR/project-template/.mcp.json" "$TARGET/.mcp.json"
-                echo "   Created: .mcp.json"
-            fi
-        else
-            echo "   Exists:  .mcp.json (skipped)"
-        fi
-
-        # Copy .gitignore
-        if [ ! -f "$TARGET/.gitignore" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: .gitignore"
-            else
-                cp "$SCRIPT_DIR/project-template/.gitignore" "$TARGET/.gitignore"
-                echo "   Created: .gitignore"
-            fi
-        else
-            echo "   Exists:  .gitignore (skipped)"
-        fi
-
-        # Copy HANDOFF.md
-        if [ ! -f "$TARGET/HANDOFF.md" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: HANDOFF.md"
-            else
-                cp "$SCRIPT_DIR/project-template/HANDOFF.md" "$TARGET/HANDOFF.md"
-                echo "   Created: HANDOFF.md"
-            fi
-        else
-            echo "   Exists:  HANDOFF.md (skipped)"
-        fi
-
-        # Copy CLAUDE.md template only if none exists
-        if [ ! -f "$TARGET/CLAUDE.md" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: CLAUDE.md"
-            else
-                cp "$SCRIPT_DIR/project-template/CLAUDE.md" "$TARGET/CLAUDE.md"
-                echo "   Created: CLAUDE.md (template - fill in project details)"
-            fi
-        else
-            echo "   Exists:  CLAUDE.md (skipped)"
-        fi
-
-        # Copy docs directory templates
-        if ! $DRY_RUN; then
-            mkdir -p "$TARGET/docs" "$TARGET/docs/plans"
-        fi
-
-        # Create docs/plans/.gitkeep for spec documents
-        if [ ! -f "$TARGET/docs/plans/.gitkeep" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: docs/plans/.gitkeep"
-            else
-                touch "$TARGET/docs/plans/.gitkeep"
-                echo "   Created: docs/plans/.gitkeep"
-            fi
-        else
-            echo "   Exists:  docs/plans/.gitkeep (skipped)"
-        fi
-
-        if [ ! -f "$TARGET/docs/MODULE-README-TEMPLATE.md" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: docs/MODULE-README-TEMPLATE.md"
-            else
-                cp "$SCRIPT_DIR/project-template/docs/MODULE-README-TEMPLATE.md" "$TARGET/docs/MODULE-README-TEMPLATE.md"
-                echo "   Created: docs/MODULE-README-TEMPLATE.md"
-            fi
-        else
-            echo "   Exists:  docs/MODULE-README-TEMPLATE.md (skipped)"
-        fi
-
-        if [ ! -f "$TARGET/docs/SPEC-TEMPLATE.md" ]; then
-            if $DRY_RUN; then
-                echo "   Would create: docs/SPEC-TEMPLATE.md"
-            else
-                cp "$SCRIPT_DIR/project-template/docs/SPEC-TEMPLATE.md" "$TARGET/docs/SPEC-TEMPLATE.md"
-                echo "   Created: docs/SPEC-TEMPLATE.md"
-            fi
-        else
-            echo "   Exists:  docs/SPEC-TEMPLATE.md (skipped)"
-        fi
-
-        # Copy starter source templates (only if src/ exists or is being created)
-        if [ -d "$TARGET/src" ]; then
-            if [ ! -f "$TARGET/src/models.py" ]; then
-                if ! find "$TARGET/src" -name "models.py" -print -quit 2>/dev/null | grep -q .; then
-                    if $DRY_RUN; then
-                        echo "   Would create: src/models.py"
-                    else
-                        cp "$SCRIPT_DIR/project-template/src/models.py" "$TARGET/src/models.py"
-                        echo "   Created: src/models.py (starter template)"
-                    fi
-                else
-                    echo "   Exists:  models.py found in src/ tree (skipped)"
-                fi
-            else
-                echo "   Exists:  src/models.py (skipped)"
-            fi
-            if [ ! -f "$TARGET/src/config.py" ]; then
-                if ! find "$TARGET/src" -name "config.py" -print -quit 2>/dev/null | grep -q .; then
-                    if $DRY_RUN; then
-                        echo "   Would create: src/config.py"
-                    else
-                        cp "$SCRIPT_DIR/project-template/src/config.py" "$TARGET/src/config.py"
-                        echo "   Created: src/config.py (starter template)"
-                    fi
-                else
-                    echo "   Exists:  config.py found in src/ tree (skipped)"
-                fi
-            else
-                echo "   Exists:  src/config.py (skipped)"
-            fi
-        else
-            echo "   Note:    No src/ directory - skipping models.py and config.py templates"
-            echo "            Create src/ and re-run to deploy, or copy from project-template/src/"
-        fi
-
-        echo ""
-        echo "   Project initialised. Review and fill in CLAUDE.md template."
+        create_or_sync "$TEMPLATE_DIR/.claude/settings.json" \
+            "$target/.claude/settings.json" ".claude/settings.json" "$dry_run"
     fi
+
+    # .gitignore: merge if exists, create if missing
+    if [ -f "$target/.gitignore" ]; then
+        merge_gitignore "$target/.gitignore" "$TEMPLATE_DIR/.gitignore" "$dry_run"
+    else
+        create_or_sync "$TEMPLATE_DIR/.gitignore" "$target/.gitignore" ".gitignore" "$dry_run"
+    fi
+
+    # Skills: create missing + update stale
+    for skill_dir in "$TEMPLATE_DIR"/.claude/skills/*/; do
+        skill_name=$(basename "$skill_dir")
+        template="$skill_dir/SKILL.md"
+        skill_target="$target/.claude/skills/$skill_name/SKILL.md"
+        [ -f "$template" ] || continue
+        create_or_sync "$template" "$skill_target" \
+            ".claude/skills/$skill_name/SKILL.md" "$dry_run"
+    done
+
+    # Agents: create missing + update stale
+    for agent in "$TEMPLATE_DIR"/.claude/agents/*.md; do
+        [ -f "$agent" ] || continue
+        agent_name=$(basename "$agent")
+        create_or_sync "$agent" "$target/.claude/agents/$agent_name" \
+            ".claude/agents/$agent_name" "$dry_run"
+    done
+
+    # Rules: create missing + update stale (guard deployment.md if customized)
+    for rule in "$TEMPLATE_DIR"/.claude/rules/*.md; do
+        [ -f "$rule" ] || continue
+        rule_name=$(basename "$rule")
+        rule_target="$target/.claude/rules/$rule_name"
+
+        if [ "$rule_name" = "deployment.md" ] && [ -f "$rule_target" ]; then
+            # Only sync deployment.md if it still contains template placeholders
+            if grep -q '{describe production' "$rule_target" 2>/dev/null; then
+                create_or_sync "$rule" "$rule_target" \
+                    ".claude/rules/$rule_name (uncustomized)" "$dry_run"
+            fi
+        else
+            create_or_sync "$rule" "$rule_target" \
+                ".claude/rules/$rule_name" "$dry_run"
+        fi
+    done
+
+    # Docs templates: create missing + update stale
+    if ! $dry_run; then
+        mkdir -p "$target/docs/plans"
+    fi
+    if [ ! -f "$target/docs/plans/.gitkeep" ]; then
+        if $dry_run; then
+            echo "   Would create: docs/plans/.gitkeep"
+        else
+            mkdir -p "$target/docs/plans"
+            touch "$target/docs/plans/.gitkeep"
+            echo "   Created: docs/plans/.gitkeep"
+        fi
+    fi
+
+    for doc_template in MODULE-README-TEMPLATE.md SPEC-TEMPLATE.md; do
+        if [ -f "$TEMPLATE_DIR/docs/$doc_template" ]; then
+            create_or_sync "$TEMPLATE_DIR/docs/$doc_template" \
+                "$target/docs/$doc_template" "docs/$doc_template" "$dry_run"
+        fi
+    done
+}
+
+# --- Helper: init a new project (sync + project-specific files) ---
+init_project() {
+    local target="$1"
+    local dry_run="$2"
+
+    # Run full sync first
+    sync_project "$target" "$dry_run"
+
+    # Then create project-specific files (never overwrites)
+    for file in .mcp.json HANDOFF.md; do
+        if [ ! -f "$target/$file" ]; then
+            create_or_sync "$TEMPLATE_DIR/$file" "$target/$file" "$file" "$dry_run"
+        else
+            echo "   Exists:  $file (skipped)"
+        fi
+    done
+
+    # CLAUDE.md template
+    if [ ! -f "$target/CLAUDE.md" ]; then
+        if $dry_run; then
+            echo "   Would create: CLAUDE.md"
+        else
+            cp "$TEMPLATE_DIR/CLAUDE.md" "$target/CLAUDE.md"
+            echo "   Created: CLAUDE.md (template - fill in project details)"
+        fi
+    else
+        echo "   Exists:  CLAUDE.md (skipped)"
+    fi
+
+    # Starter source templates (only if src/ exists)
+    if [ -d "$target/src" ]; then
+        for src_file in models.py config.py; do
+            if [ ! -f "$target/src/$src_file" ]; then
+                if ! find "$target/src" -name "$src_file" -print -quit 2>/dev/null | grep -q .; then
+                    create_or_sync "$TEMPLATE_DIR/src/$src_file" \
+                        "$target/src/$src_file" "src/$src_file (starter template)" "$dry_run"
+                else
+                    echo "   Exists:  $src_file found in src/ tree (skipped)"
+                fi
+            else
+                echo "   Exists:  src/$src_file (skipped)"
+            fi
+        done
+    else
+        echo "   Note:    No src/ directory - skipping models.py and config.py templates"
+        echo "            Create src/ and re-run to deploy, or copy from project-template/src/"
+    fi
+}
+
+# --- Helper: discover all projects in home directory ---
+discover_projects() {
+    local found=()
+    for dir in "$HOME"/*/; do
+        [ -d "$dir" ] || continue
+        # Must have .claude/ directory (sign of a managed project)
+        [ -d "$dir/.claude" ] || continue
+        # Skip the standards repo itself
+        [ "$(cd "$dir" && pwd)" = "$SCRIPT_DIR" ] && continue
+        found+=("$(cd "$dir" && pwd)")
+    done
+    printf '%s\n' "${found[@]}"
+}
+
+# --- Project-level deployment ---
+echo "4. Project-level sync..."
+
+if [ ${#TARGETS[@]} -gt 0 ]; then
+    # Explicit target(s) provided
+    for target in "${TARGETS[@]}"; do
+        if [ ! -d "$target" ]; then
+            echo "   ERROR: $target is not a directory"
+            exit 1
+        fi
+        target="$(cd "$target" && pwd)"
+        echo ""
+        if $INIT_MODE; then
+            echo "   --- Initialising: $target ---"
+            init_project "$target" "$DRY_RUN"
+            echo ""
+            echo "   Project initialised. Review and fill in CLAUDE.md template."
+        else
+            echo "   --- Syncing: $target ---"
+            sync_project "$target" "$DRY_RUN"
+        fi
+    done
+elif $INIT_MODE; then
+    echo "   ERROR: --init requires a target directory"
+    echo "   Usage: ./setup.sh --init /path/to/new-project"
+    exit 1
 else
-    echo "4. Project-level setup: skipped (no target directory provided)"
-    echo "   To initialise a project:  ./setup.sh /path/to/project"
-    echo "   To update a project:      ./setup.sh --update /path/to/project"
+    # No target - auto-discover and sync all projects
+    projects=$(discover_projects)
+    if [ -z "$projects" ]; then
+        echo "   No projects found in $HOME with .claude/ directories"
+    else
+        count=$(echo "$projects" | wc -l)
+        echo "   Found $count projects to sync"
+        while IFS= read -r project; do
+            echo ""
+            echo "   --- Syncing: $project ---"
+            sync_project "$project" "$DRY_RUN"
+        done <<< "$projects"
+    fi
 fi
 
 echo ""
