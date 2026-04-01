@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+# File: user-level/hooks/pre-commit
+# Purpose: Block commits containing secrets, sensitive filenames, or personal data.
+# Project: HumanSpark Engineering Standards | Date: 2026-04-01
+#
+# Overview: User-level pre-commit hook that scans staged files for three
+# categories of sensitive content: dangerous filenames, secrets in diffs,
+# and personal email addresses. Blocks on the first two, warns on the third
+# (except in test fixtures). Deploy by setting git core.hooksPath or copying
+# to .git/hooks/pre-commit per repo. Override with git commit --no-verify.
+
+set -euo pipefail
+
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+errors=0
+warnings=0
+
+# --- 1. Sensitive filenames ---
+sensitive_patterns=(
+    'financial_summary'
+    'purchase_ledger'
+    'email-sweep'
+    'pipeline\.md'
+    'credentials'
+    '\.env\.shared'
+)
+
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null)
+
+if [[ -n "$staged_files" ]]; then
+    for pattern in "${sensitive_patterns[@]}"; do
+        matches=$(echo "$staged_files" | grep -iE "$pattern" || true)
+        if [[ -n "$matches" ]]; then
+            echo -e "${RED}BLOCKED: Sensitive filename pattern '$pattern':${NC}"
+            echo "$matches" | sed 's/^/  /'
+            errors=$((errors + 1))
+        fi
+    done
+fi
+
+# --- 2. Secrets in diffs ---
+secret_patterns=(
+    'password\s*='
+    'api_key\s*='
+    'secret\s*='
+    'token\s*='
+    'BEGIN (RSA |DSA |EC |OPENSSH )?PRIVATE KEY'
+    'Bearer [A-Za-z0-9_\-\.]+'
+    'AKIA[0-9A-Z]{16}'
+)
+
+diff_output=$(git diff --cached --diff-filter=ACMR -U0 2>/dev/null)
+
+if [[ -n "$diff_output" ]]; then
+    for pattern in "${secret_patterns[@]}"; do
+        matches=$(echo "$diff_output" | grep -E '^\+' | grep -v '^\+\+\+' | grep -iE "$pattern" || true)
+        if [[ -n "$matches" ]]; then
+            echo -e "${RED}BLOCKED: Potential secret matching '$pattern':${NC}"
+            echo "$matches" | head -5 | sed 's/^/  /'
+            errors=$((errors + 1))
+        fi
+    done
+fi
+
+# --- 3. Personal email addresses (warn, don't block) ---
+email_domains=(
+    '@mailbox\.org'
+    '@humanspark\.ai'
+    '@gmail\.com'
+    '@yahoo\.com'
+    '@hotmail\.com'
+    '@outlook\.com'
+)
+
+if [[ -n "$staged_files" ]]; then
+    non_test_files=$(echo "$staged_files" | grep -v -E '(^tests/|/tests/|test_|_test\.|fixtures/)' || true)
+    if [[ -n "$non_test_files" ]]; then
+        for domain in "${email_domains[@]}"; do
+            matches=$(echo "$diff_output" | grep -E '^\+' | grep -v '^\+\+\+' | grep -iE "$domain" || true)
+            if [[ -n "$matches" ]]; then
+                echo -e "${YELLOW}WARNING: Personal email address (${domain}) in staged changes:${NC}"
+                echo "$matches" | head -3 | sed 's/^/  /'
+                warnings=$((warnings + 1))
+            fi
+        done
+    fi
+fi
+
+# --- Summary ---
+if [[ $errors -gt 0 ]]; then
+    echo ""
+    echo -e "${RED}Commit blocked: $errors issue(s) found.${NC}"
+    echo "Override with: git commit --no-verify"
+    exit 1
+fi
+
+if [[ $warnings -gt 0 ]]; then
+    echo -e "${YELLOW}Commit proceeding with $warnings warning(s).${NC}"
+fi
+
+exit 0

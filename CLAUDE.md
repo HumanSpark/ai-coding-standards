@@ -51,6 +51,7 @@ No automated tests. Validate by running `./setup.sh --init --dry-run /tmp/test-p
 | setup.sh | Deployer script - user-level + project initialisation |
 | user-level/CLAUDE.md | Universal AI instructions (-> ~/.claude/CLAUDE.md) |
 | user-level/rules/claude-md-discipline.md | CLAUDE.md maintenance rules (-> ~/.claude/rules/) |
+| user-level/hooks/pre-commit | Pre-commit hook: blocks secrets, sensitive filenames, personal emails |
 | project-template/CLAUDE.md | Stage 4 project context template |
 | project-template/.gitignore | Template gitignore (includes CLAUDE.local.md) |
 | project-template/HANDOFF.md | Session handoff template for multi-session work |

@@ -1,4 +1,4 @@
-<!-- ~2650 tokens — budget: 3000 -->
+<!-- ~2750 tokens — budget: 3000 -->
 # HumanSpark AI Coding Instructions
 
 Standing instructions for all HumanSpark projects. Project-specific CLAUDE.md may override individual rules.
@@ -17,6 +17,10 @@ Senior software engineer and collaborative peer. Question decisions, flag gaps, 
 - Verb after prefix: `feat: add`, `fix: resolve`, `docs: update`, `refactor: extract`
 - NEVER include Co-Authored-By lines
 - Commit messages should be specific enough for an AI agent in a future session to understand what changed
+- **Pre-commit hook:** A user-level hook blocks commits containing sensitive
+  filenames, secrets in diffs, and personal email addresses. If a commit is
+  blocked, fix the issue - do not bypass with `--no-verify` unless explicitly
+  told to. Hook source: `user-level/hooks/pre-commit` in ai-coding-standards.
 - **R&D commits:** Prefix with `[R&D]` when work involves genuine technical
   uncertainty - trying an approach where the outcome is unknown, comparing
   alternatives, or benchmarking feasibility. When abandoning an approach, the
