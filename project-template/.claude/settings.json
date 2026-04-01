@@ -36,6 +36,18 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | grep -oP '\"command\":\\s*\"\\K[^\"]+' 2>/dev/null || echo ''); if echo \"$CMD\" | grep -qE '^git (push|commit)'; then git fetch 2>/dev/null; BEHIND=$(git rev-list --count HEAD..@{u} 2>/dev/null || echo 0); if [ \"$BEHIND\" -gt 0 ]; then echo \"{\\\"feedback\\\": \\\"WARNING: local branch is $BEHIND commit(s) behind remote. Pull or rebase before proceeding.\\\"}\"; else echo '{\"feedback\": \"remote check ok\"}'; fi; fi",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
