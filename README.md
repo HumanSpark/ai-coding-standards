@@ -25,7 +25,7 @@ humanspark-standards/
 │   │   ├── models.py            - Starter shared types template
 │   │   └── config.py            - Starter typed config template
 │   └── .claude/
-│       ├── settings.json        - Permissions + hooks (py_compile on edits)
+│       ├── settings.json        - Permissions + hooks (git fetch pre-commit/push, py_compile on edits)
 │       ├── rules/
 │       │   ├── deployment.md       - Template: always-loaded project rules
 │       │   └── specs.md            - Enforces docs/plans/ as canonical spec location
@@ -89,7 +89,7 @@ Stage 4 template with: design philosophy (strict vs free-to-adapt), evolution hi
 Session continuity for multi-session work. Six fields: current task, last action, next action, key files, context, check state. Updated after every completed subtask. Read first when resuming work.
 
 ### Project Template: `.claude/settings.json`
-Permissions and hooks. Allow rules cover safe operations (reading, editing src/tests/docs, running tests, git status/diff/log/add/commit/push). Deny rules block sensitive files (.env, secrets, credentials), network egress (curl, wget), and destructive ops (rm -rf). PostToolUse hook runs `python -m py_compile` after every Python file edit. Settings follow a 5-level precedence - see Rule 7.8 in the reference doc.
+Permissions and hooks. Allow rules cover safe operations (reading, editing src/tests/docs, running tests, git status/diff/log/add/commit/push). Deny rules block sensitive files (.env, secrets, credentials), network egress (curl, wget), and destructive ops (rm -rf). PreToolUse hook runs `git fetch` before any `git commit` or `git push` and warns if the branch is behind remote. PostToolUse hook runs `python -m py_compile` after every Python file edit. Settings follow a 5-level precedence - see Rule 7.8 in the reference doc.
 
 ### Project Template: `.gitignore`
 Template gitignore covering Python artifacts, environment files, databases, and personal Claude Code files (`CLAUDE.local.md`, `.claude/settings.local.json`, `.claude/agent-memory-local/`). Team-shared Claude Code config (settings.json, skills, agents, rules) is NOT gitignored.
