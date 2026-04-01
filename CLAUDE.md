@@ -30,6 +30,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 11. **Visual Review Skill (2026-03-21):** Added visual-review skill to project template. Playwright-based screenshot and visual inspection for frontend changes. Includes contact sheet compositing, before/after comparison, SSL handling, and design evaluation dimensions.
 12. **Tool Discipline & Setup Overhaul (2026-04-01):** Added five Development rules to user-level CLAUDE.md: clean before refactoring, guard against context decay, verify edits applied, assume tool output is truncated, sub-agents for independent work only. Extracted "CLAUDE.md as Code" section to `user-level/rules/claude-md-discipline.md` to offset token growth. Rewrote setup.sh: sync is now the default (creates missing + updates stale template-managed files), auto-discovers all projects when no target given, `--init` for new projects only. Eliminated the old --update/--sync split. Evidence: analysis of Claude Code's actual tool behaviour; found 11/13 projects running stale skills after template updates because --update never refreshed existing files.
 13. **Quality Standards & Remote Sync (2026-04-01):** Added Quality Standards section to user-level CLAUDE.md with five rules: post-rewrite secret auditing, status verification against source of truth, lazy evaluation preservation, API parameter verification, and remote sync check before commit/push. Added PreToolUse hook to project-template settings.json that runs `git fetch` and warns if behind remote before any `git commit` or `git push`. Evidence: observed Claude reporting repos as up-to-date without fetching, and pushing without checking for upstream changes.
+14. **User-Level Pre-Commit Hook (2026-04-01):** Added pre-commit hook at `user-level/hooks/pre-commit` that blocks commits containing sensitive filenames, secrets in diffs (passwords, API keys, Bearer tokens, AWS keys), and warns on personal email addresses in non-test files. setup.sh now deploys hooks to `~/.config/git/hooks/` and sets `core.hooksPath` globally, applying to all repos without per-project setup. Evidence: CC Insights report identified 21 "wrong approach" friction incidents including committing sensitive data.
 
 ## Build & Run
 
@@ -48,7 +49,7 @@ No automated tests. Validate by running `./setup.sh --init --dry-run /tmp/test-p
 
 | File | What it does |
 |------|-------------|
-| setup.sh | Deployer script - user-level + project initialisation |
+| setup.sh | Deployer script - user-level instructions, git hooks, and project sync |
 | user-level/CLAUDE.md | Universal AI instructions (-> ~/.claude/CLAUDE.md) |
 | user-level/rules/claude-md-discipline.md | CLAUDE.md maintenance rules (-> ~/.claude/rules/) |
 | user-level/hooks/pre-commit | Pre-commit hook: blocks secrets, sensitive filenames, personal emails |
