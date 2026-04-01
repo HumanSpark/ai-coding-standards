@@ -16,7 +16,7 @@ subsequent syncs.
 
 | File | What it does |
 |------|-------------|
-| `.claude/settings.json` | py_compile hook that catches syntax errors on save |
+| `.claude/settings.json` | git fetch before commit/push + py_compile on save |
 | `.gitignore` | Python artifacts, env files, personal Claude Code files |
 | `.claude/skills/` | 8 skill packs (testing, security, prompts, memory, modular design, intake, workplan, visual review) |
 | `.claude/agents/code-reviewer.md` | Code review agent definition |
@@ -148,9 +148,10 @@ git status
 You'll see untracked files for everything that was created. Review them
 before committing:
 
-- **`.claude/settings.json`** - Check the py_compile hook paths make sense
-  for your project layout. If the project isn't Python, you may want to
-  adjust or remove this.
+- **`.claude/settings.json`** - Has two hooks: a PreToolUse hook that
+  runs `git fetch` before commit/push (language-agnostic), and a PostToolUse
+  hook that runs py_compile after Python edits. For non-Python projects,
+  remove the py_compile hook but keep the git fetch one.
 
 - **`.claude/skills/`** - These are ready to use as-is. Browse them if
   you're curious, but they don't need editing.
