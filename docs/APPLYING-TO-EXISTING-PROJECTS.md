@@ -47,11 +47,13 @@ cd ~/ai-coding-standards
 ./setup.sh
 ```
 
-You should see: `Installed: ~/.claude/CLAUDE.md`
+You should see output confirming installation of `~/.claude/CLAUDE.md`,
+rules files, and user-level git hooks (deployed to `~/.config/git/hooks/`
+via `core.hooksPath`).
 
 This gives Claude your coding style, git conventions, module design rules,
 and testing preferences in every project - no per-project setup needed for
-the basics.
+the basics. The pre-commit hook applies to all repos automatically.
 
 ---
 
@@ -71,16 +73,11 @@ project-specific files like CLAUDE.md are never overwritten.
 
 ```bash
 cd ~/ai-coding-standards
-
-for project in \
-  claritybot clearmail gdrive-ops humansparkforge inbox-roulette \
-  ragbuilder sessionpilot shared-email \
-  spark tenderhelper workstation-dotfiles; do
-  echo ""
-  echo "=========================================="
-  ./setup.sh ~/$project
-done
+./setup.sh
 ```
+
+With no arguments, setup.sh auto-discovers all projects in the home
+directory that have a `.claude/` directory and syncs them all.
 
 ---
 
@@ -183,30 +180,28 @@ git commit -m "chore: add HumanSpark engineering standards"
 
 ## Your Projects at a Glance
 
-All 11 projects have been deployed via `setup.sh` and committed
-(initial rollout: 2026-03-14). To verify current state, run:
+All 14 managed projects are synced via `./setup.sh` (auto-discovers
+projects with a `.claude/` directory). To verify current state, run:
 
 ```bash
-for project in \
-  claritybot clearmail gdrive-ops humansparkforge inbox-roulette \
-  ragbuilder sessionpilot shared-email \
-  spark tenderhelper workstation-dotfiles; do
-  echo "$project: $(cd ~/$project && git log --oneline -1 -- .claude/ CLAUDE.md)"
-done
+./setup.sh --dry-run
 ```
 
 | Project |
 |---------|
-| claritybot |
+| booky |
+| ccloop |
 | clearmail |
 | gdrive-ops |
-| humansparkforge |
-| inbox-roulette |
+| migration |
 | ragbuilder |
 | sessionpilot |
-| shared-email |
-| spark |
+| sparkcore |
+| sparkdash |
+| sparkforge |
+| sparky |
 | tenderhelper |
+| tidybot |
 | workstation-dotfiles |
 
 ---
