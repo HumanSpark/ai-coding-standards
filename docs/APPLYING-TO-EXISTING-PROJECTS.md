@@ -7,18 +7,31 @@ all your existing projects.
 
 ## What You Get
 
-When you apply standards to a project, it receives these files (nothing is
-overwritten if it already exists):
+When you apply standards to a project, it receives these files. Sync mode
+(default) creates missing files and updates stale ones. Init mode (`--init`)
+additionally creates project-specific files that are never overwritten on
+subsequent syncs.
+
+**Synced to every project (created + kept up to date):**
+
+| File | What it does |
+|------|-------------|
+| `.claude/settings.json` | py_compile hook that catches syntax errors on save |
+| `.gitignore` | Python artifacts, env files, personal Claude Code files |
+| `.claude/skills/` | 8 skill packs (testing, security, prompts, memory, modular design, intake, workplan, visual review) |
+| `.claude/agents/code-reviewer.md` | Code review agent definition |
+| `.claude/rules/deployment.md` | Template: always-loaded deployment constraints |
+| `.claude/rules/specs.md` | Enforces docs/plans/ as canonical spec location |
+| `docs/MODULE-README-TEMPLATE.md` | Template for module contract docs |
+| `docs/SPEC-TEMPLATE.md` | Feature spec template (intake to workplan contract) |
+| `docs/plans/` | Directory for spec and plan documents |
+
+**Created only with `--init` (never overwritten):**
 
 | File | What it does |
 |------|-------------|
 | `CLAUDE.md` | Project context template - tells Claude about your project |
 | `HANDOFF.md` | Session handoff template for multi-session work |
-| `.claude/settings.json` | py_compile hook that catches syntax errors on save |
-| `.claude/skills/` | 5 skill packs (modular design, testing, security, prompts, memory) |
-| `.claude/agents/code-reviewer.md` | Code review agent definition |
-| `.mcp.json` | Forgejo MCP server config |
-| `docs/MODULE-README-TEMPLATE.md` | Template for module contract docs |
 | `src/models.py` | Starter frozen dataclasses (only if `src/` exists) |
 | `src/config.py` | Starter typed config (only if `src/` exists) |
 
@@ -50,9 +63,9 @@ For each project you want to fully standardise:
 ./setup.sh ~/project-name
 ```
 
-That's it. The script creates all the template files listed above. It never
-overwrites existing files, so it's safe to run on projects that already have
-some of these in place.
+That's it. The script creates missing files and updates stale template-managed
+files (skills, agents, rules, doc templates). It's safe to re-run any time -
+project-specific files like CLAUDE.md are never overwritten.
 
 ### Run them all at once
 
@@ -139,9 +152,6 @@ before committing:
   for your project layout. If the project isn't Python, you may want to
   adjust or remove this.
 
-- **`.mcp.json`** - Contains Forgejo MCP config. If you don't use Forgejo,
-  you can delete this file.
-
 - **`.claude/skills/`** - These are ready to use as-is. Browse them if
   you're curious, but they don't need editing.
 
@@ -163,7 +173,7 @@ For each project:
 
 ```bash
 cd ~/project-name
-git add .claude/ CLAUDE.md HANDOFF.md .mcp.json docs/
+git add .claude/ .gitignore CLAUDE.md HANDOFF.md docs/
 git add src/models.py src/config.py 2>/dev/null  # only if they exist
 git commit -m "chore: add HumanSpark engineering standards"
 ```
@@ -203,8 +213,9 @@ done
 ## FAQ
 
 **Will setup.sh break anything?**
-No. It never overwrites existing files. If a file already exists, it prints
-"skipped" and moves on.
+No. It syncs template-managed files (skills, agents, rules, doc templates) but
+never overwrites project-specific files (CLAUDE.md, HANDOFF.md). Settings.json
+and .gitignore are merged additively - existing entries are preserved.
 
 **What if my project isn't Python?**
 The skills and CLAUDE.md template are language-agnostic. The only
@@ -217,11 +228,10 @@ and conventions. The project-level CLAUDE.md adds project-specific context.
 It's most valuable for complex projects - a simple script folder can wait.
 
 **Can I re-run setup.sh later?**
-Yes, any time. If new skills or templates are added to `ai-coding-standards`
-in the future, re-running setup.sh will deploy only the new files without
-touching anything that already exists.
+Yes, any time. Running `./setup.sh` with no arguments auto-discovers all
+projects and syncs them. New and updated skills, agents, rules, and doc
+templates are deployed automatically.
 
 **How do I update skills across all projects?**
-If a skill is updated in `ai-coding-standards`, you need to manually copy it
-or delete the old version and re-run setup.sh (since it won't overwrite).
-A future enhancement could add a `--force-skills` flag for this.
+Just re-run `./setup.sh`. Sync mode (the default) detects stale
+template-managed files and updates them.
