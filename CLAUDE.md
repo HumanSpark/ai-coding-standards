@@ -29,6 +29,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 10. **Retire commitreader Repo (2026-03-18):** R&D evidence report (12 repos, 1332 commits) kept locally as `docs/rd-evidence-report.md` (gitignored). Deleted commitreader repo - it was a redundant copy of project-template/ with no source code.
 11. **Visual Review Skill (2026-03-21):** Added visual-review skill to project template. Playwright-based screenshot and visual inspection for frontend changes. Includes contact sheet compositing, before/after comparison, SSL handling, and design evaluation dimensions.
 12. **Tool Discipline & Setup Overhaul (2026-04-01):** Added five Development rules to user-level CLAUDE.md: clean before refactoring, guard against context decay, verify edits applied, assume tool output is truncated, sub-agents for independent work only. Extracted "CLAUDE.md as Code" section to `user-level/rules/claude-md-discipline.md` to offset token growth. Rewrote setup.sh: sync is now the default (creates missing + updates stale template-managed files), auto-discovers all projects when no target given, `--init` for new projects only. Eliminated the old --update/--sync split. Evidence: analysis of Claude Code's actual tool behaviour; found 11/13 projects running stale skills after template updates because --update never refreshed existing files.
+13. **Quality Standards & Remote Sync (2026-04-01):** Added Quality Standards section to user-level CLAUDE.md with five rules: post-rewrite secret auditing, status verification against source of truth, lazy evaluation preservation, API parameter verification, and remote sync check before commit/push. Added PreToolUse hook to project-template settings.json that runs `git fetch` and warns if behind remote before any `git commit` or `git push`. Evidence: observed Claude reporting repos as up-to-date without fetching, and pushing without checking for upstream changes.
 
 ## Build & Run
 
@@ -55,7 +56,7 @@ No automated tests. Validate by running `./setup.sh --init --dry-run /tmp/test-p
 | project-template/HANDOFF.md | Session handoff template for multi-session work |
 | project-template/.claude/rules/deployment.md | Template: always-loaded project rules |
 | project-template/.claude/rules/specs.md | Enforces docs/plans/ as canonical spec location |
-| project-template/.claude/settings.json | Permissions + py_compile hook (see Rule 7.8 for precedence) |
+| project-template/.claude/settings.json | Permissions + hooks: git fetch before commit/push, py_compile after edits (see Rule 7.8) |
 | project-template/.claude/skills/modular-design/SKILL.md | Module boundary patterns and conventions |
 | project-template/.claude/skills/project-intake/SKILL.md | Structured interview producing spec documents |
 | project-template/.claude/skills/visual-review/SKILL.md | Playwright screenshot and visual review for frontend changes |
