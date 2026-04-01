@@ -1,4 +1,4 @@
-<!-- ~2600 tokens — budget: 3000 -->
+<!-- ~2650 tokens — budget: 3000 -->
 # HumanSpark AI Coding Instructions
 
 Standing instructions for all HumanSpark projects. Project-specific CLAUDE.md may override individual rules.
@@ -231,6 +231,8 @@ For package layouts, see `.claude/skills/modular-design/SKILL.md`.
   materialization without explicit approval.
 - For external API calls or tool integrations, verify parameters
   against docs or existing config before implementing.
+- Before committing or pushing, `git fetch` and verify the local
+  branch is not behind remote. Rebase or merge if behind.
 
 ---
 
