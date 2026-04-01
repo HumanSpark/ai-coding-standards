@@ -18,7 +18,6 @@ humanspark-standards/
 │   ├── CLAUDE.md                - Project context template (Stage 4)
 │   ├── .gitignore               - Template gitignore (includes CLAUDE.local.md)
 │   ├── HANDOFF.md               - Session handoff template
-│   ├── .mcp.json                - Forgejo MCP server config
 │   ├── docs/
 │   │   ├── MODULE-README-TEMPLATE.md  - Module contract template
 │   │   └── SPEC-TEMPLATE.md           - Feature spec template (intake → workplan)
@@ -58,7 +57,7 @@ Three layers, two audiences:
 
 **User-level** (`~/.claude/CLAUDE.md`) loads on every Claude Code session, every project. Contains universal rules: commit conventions, file headers, code style, module design patterns, testing discipline, security principles, writing style.
 
-**Project-level** (`CLAUDE.md` + `.claude/`) contains what's unique to each project: design philosophy, evolution history, architecture, key files, security boundaries, gotchas. Plus hooks for automated quality gates, skills for domain knowledge, MCP for external tool integration, and HANDOFF.md for session continuity.
+**Project-level** (`CLAUDE.md` + `.claude/`) contains what's unique to each project: design philosophy, evolution history, architecture, key files, security boundaries, gotchas. Plus hooks for automated quality gates, skills for domain knowledge, and HANDOFF.md for session continuity.
 
 **Reference docs** are for the human. The master standards document has full evidence and rationale for every rule. The checklist is the pin-on-the-wall actionable version.
 
@@ -78,23 +77,6 @@ Three layers, two audiences:
 
 Won't overwrite existing files - only creates what's missing.
 
-### Forgejo MCP Setup
-
-Add to `~/.env.shared`:
-
-```
-FORGEJO_URL=https://your-forgejo-instance.com
-FORGEJO_TOKEN=your_token_here
-```
-
-Install the binary:
-
-```bash
-go install github.com/raohwork/forgejo-mcp@latest
-```
-
-Or download from: https://github.com/raohwork/forgejo-mcp/releases
-
 ## What Each Component Does
 
 ### User-Level: `~/.claude/CLAUDE.md`
@@ -111,9 +93,6 @@ Permissions and hooks. Allow rules cover safe operations (reading, editing src/t
 
 ### Project Template: `.gitignore`
 Template gitignore covering Python artifacts, environment files, databases, and personal Claude Code files (`CLAUDE.local.md`, `.claude/settings.local.json`, `.claude/agent-memory-local/`). Team-shared Claude Code config (settings.json, skills, agents, rules) is NOT gitignored.
-
-### Project Template: `.mcp.json`
-Forgejo/Gitea MCP server in stdio mode. Gives Claude Code native access to repos, issues, milestones, PRs, wiki pages, and releases.
 
 ### Skills
 

@@ -35,7 +35,7 @@ This system captures how we actually work, not how we aspire to work. Every rule
 ```bash
 ./setup.sh                         # Sync user-level + all projects (auto-discover)
 ./setup.sh ~/path/to/project       # Sync user-level + one project
-./setup.sh --init ~/new-project    # Sync + create project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json)
+./setup.sh --init ~/new-project    # Sync + create project-specific files (CLAUDE.md, HANDOFF.md)
 ./setup.sh --dry-run               # Preview any of the above without applying
 ```
 
@@ -56,7 +56,6 @@ No automated tests. Validate by running `./setup.sh --init --dry-run /tmp/test-p
 | project-template/.claude/rules/deployment.md | Template: always-loaded project rules |
 | project-template/.claude/rules/specs.md | Enforces docs/plans/ as canonical spec location |
 | project-template/.claude/settings.json | Permissions + py_compile hook (see Rule 7.8 for precedence) |
-| project-template/.mcp.json | Forgejo MCP server config |
 | project-template/.claude/skills/modular-design/SKILL.md | Module boundary patterns and conventions |
 | project-template/.claude/skills/project-intake/SKILL.md | Structured interview producing spec documents |
 | project-template/.claude/skills/visual-review/SKILL.md | Playwright screenshot and visual review for frontend changes |

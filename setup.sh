@@ -6,7 +6,7 @@
 # Overview: Deploys user-level CLAUDE.md and rules to ~/.claude/. Syncs all
 # project-level template-managed files (skills, agents, rules, docs templates)
 # by default - creates missing files and updates stale ones. With --init,
-# also creates project-specific files (CLAUDE.md, HANDOFF.md, .mcp.json) that
+# also creates project-specific files (CLAUDE.md, HANDOFF.md) that
 # are never touched during normal sync. With no target, auto-discovers all
 # projects in home directory.
 #
@@ -93,44 +93,6 @@ else
             echo "   Installed: ~/.claude/rules/$rule_name"
         done
     fi
-fi
-echo ""
-
-# --- Forgejo MCP binary check ---
-echo "2. Checking for forgejo-mcp..."
-if command -v forgejo-mcp &>/dev/null; then
-    echo "   Found: $(which forgejo-mcp)"
-elif command -v go &>/dev/null; then
-    if $DRY_RUN; then
-        echo "   Not found. Would install via: go install github.com/raohwork/forgejo-mcp@latest"
-    else
-        echo "   Not found. Installing via: go install github.com/raohwork/forgejo-mcp@latest"
-        go install github.com/raohwork/forgejo-mcp@latest
-        echo "   Installed to: $(go env GOPATH)/bin/forgejo-mcp"
-    fi
-else
-    echo "   Not found. Go not installed. Install manually:"
-    echo "   https://github.com/raohwork/forgejo-mcp/releases"
-fi
-echo ""
-
-# --- Environment variable check ---
-echo "3. Checking Forgejo credentials..."
-if [ -f ~/.env.shared ]; then
-    if grep -qi "FORGEJO_URL\|GITEA_URL" ~/.env.shared; then
-        echo "   Found URL in ~/.env.shared"
-    else
-        echo "   WARNING: No FORGEJO_URL in ~/.env.shared"
-        echo "   Add: FORGEJO_URL=https://your-forgejo-instance.com"
-    fi
-    if grep -qi "FORGEJO_TOKEN\|GITEA_TOKEN" ~/.env.shared; then
-        echo "   Found TOKEN in ~/.env.shared"
-    else
-        echo "   WARNING: No FORGEJO_TOKEN in ~/.env.shared"
-        echo "   Generate at: Settings > Applications > Access Tokens on your Forgejo instance"
-    fi
-else
-    echo "   WARNING: ~/.env.shared not found"
 fi
 echo ""
 
@@ -354,7 +316,7 @@ init_project() {
     sync_project "$target" "$dry_run"
 
     # Then create project-specific files (never overwrites)
-    for file in .mcp.json HANDOFF.md; do
+    for file in HANDOFF.md; do
         if [ ! -f "$target/$file" ]; then
             create_or_sync "$TEMPLATE_DIR/$file" "$target/$file" "$file" "$dry_run"
         else
@@ -409,7 +371,7 @@ discover_projects() {
 }
 
 # --- Project-level deployment ---
-echo "4. Project-level sync..."
+echo "2. Project-level sync..."
 
 if [ ${#TARGETS[@]} -gt 0 ]; then
     # Explicit target(s) provided
