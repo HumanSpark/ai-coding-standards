@@ -60,6 +60,13 @@ Every code file. Adapt comment syntax per language.
   tests pass, use `Skill(superpowers:verification-before-completion)` and
   execute its verification steps. Run the actual commands, read the actual
   output, confirm success with evidence. No claims without proof.
+- **Visual changes require visual verification.** Never claim a visual or
+  rendered output is correct without using available verification tools
+  (screenshots, visual-review skill, html2png/pdf2png pipelines). Code
+  inspection is not visual verification. If the change affects what a user
+  sees - HTML, CSS, templates, generated documents, rendered output - use
+  the visual review skill or equivalent before committing. This is a stage
+  gate, not optional.
 - **Plan before multi-step work.** For any task involving 3+ files or multiple
   coordinated changes, use `Skill(superpowers:writing-plans)` and produce a
   written plan before touching code. Single-file changes don't need this.
