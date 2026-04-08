@@ -67,6 +67,11 @@ Every code file. Adapt comment syntax per language.
   sees - HTML, CSS, templates, generated documents, rendered output - use
   the visual review skill or equivalent before committing. This is a stage
   gate, not optional.
+- **Image size limit for visual review.** NEVER create or read any image
+  >= 2000px on either dimension. Images at or above 2000px break the
+  conversation context. This applies to all screenshots, contact sheets,
+  PDF page extractions, and before/after comparisons. Resize with Pillow
+  (`img.thumbnail((1900, 1900))`) before reading if needed.
 - **Plan before multi-step work.** For any task involving 3+ files or multiple
   coordinated changes, use `Skill(superpowers:writing-plans)` and produce a
   written plan before touching code. Single-file changes don't need this.
