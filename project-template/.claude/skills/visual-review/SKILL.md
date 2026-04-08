@@ -154,17 +154,17 @@ with sync_playwright() as p:
         pg.close()
     browser.close()
 
-# 2. Composite into 3x2 grid (max 2000px for Claude API)
+# 2. Composite into 3x2 grid (max 1900px - safety margin below 2000px limit)
 cols, rows, gap = 3, 2, 10
 sample = Image.open(page_images[0])
 pw, ph = sample.size
 sample.close()
-cell_w = (2000 - (cols + 1) * gap) // cols
+cell_w = (1900 - (cols + 1) * gap) // cols
 cell_h = int(cell_w * (ph / pw))
 canvas_w = cols * cell_w + (cols + 1) * gap
 canvas_h = rows * cell_h + (rows + 1) * gap
-if canvas_h > 2000:
-    cell_h = (2000 - (rows + 1) * gap) // rows
+if canvas_h > 1900:
+    cell_h = (1900 - (rows + 1) * gap) // rows
     cell_w = int(cell_h / (ph / pw))
     canvas_w = cols * cell_w + (cols + 1) * gap
     canvas_h = rows * cell_h + (rows + 1) * gap
@@ -200,6 +200,10 @@ from PIL import Image
 before = Image.open('OUTPUT_DIR/before.png')
 after = Image.open('OUTPUT_DIR/after.png')
 gap = 10
+# Resize each half so combined image stays under 1900px
+half_w = (1900 - gap) // 2
+for img in [before, after]:
+    img.thumbnail((half_w, 1900), Image.LANCZOS)
 w = before.width + after.width + gap
 h = max(before.height, after.height)
 canvas = Image.new('RGB', (w, h), (255, 255, 255))
@@ -247,8 +251,30 @@ For thorough reviews (not quick sanity checks), evaluate against:
 | Fonts differ from browser | Playwright uses its own Chromium. Minor differences expected. |
 | Pillow not available | Install in SparkForge or project venv, or use individual screenshots |
 
+## Image Size Limit — CRITICAL
+
+**NEVER create or read any image >= 2000px on either dimension.** Images at or
+above 2000px break the conversation context and kill the session. This applies
+to screenshots, contact sheets, PDF page extractions, before/after comparisons,
+and any other image passed to the Read tool.
+
+Before reading any generated image, verify its dimensions. When generating:
+- Viewport screenshots: keep width <= 1440, height <= 1800
+- Contact sheets: cap grid to 1900×1900 max
+- PDF page PNGs: render at a DPI/scale that keeps the longest side under 2000px
+- Before/after composites: resize each half so the combined image stays under 2000px
+
+If an image exceeds the limit, resize it with Pillow before reading:
+```python
+from PIL import Image
+img = Image.open('OUTPUT_DIR/page.png')
+img.thumbnail((1900, 1900), Image.LANCZOS)
+img.save('OUTPUT_DIR/page.png')
+```
+
 ## Anti-Patterns
 
+- Do NOT create or read images >= 2000px on any dimension - breaks the conversation
 - Do NOT skip visual review for "small" CSS changes - they often have knock-on effects
 - Do NOT review only the changed page - check adjacent pages for consistency
 - Do NOT use full-page screenshots in contact sheets - fold-only keeps the grid readable
