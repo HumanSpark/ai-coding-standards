@@ -18,39 +18,40 @@ Code review alone is insufficient for visual work - always verify rendering.
 
 ## Dependencies
 
-Requires a Python environment with **Playwright** (screenshots) and optionally
-**Pillow** (contact sheets / comparisons). If Pillow is unavailable, use
-individual screenshots instead.
+Requires a Python environment with **Playwright** (screenshots) and **Pillow**
+(contact sheets / comparisons). Both are installed automatically in a shared
+venv on first use.
 
-**Find or create a usable Python:**
+### Setup (run once per session - idempotent)
 
-1. **Check SparkForge venv** (if available - typically has both):
-   ```bash
-   ~/sparkforge/venv/bin/python3 -c "from playwright.sync_api import sync_playwright; from PIL import Image; print('OK')"
-   ```
+```bash
+VENV=~/.local/share/visual-review/venv
+if [ ! -x "$VENV/bin/python3" ]; then
+    python3 -m venv "$VENV" && \
+    "$VENV/bin/pip" install --quiet playwright Pillow && \
+    "$VENV/bin/python3" -m playwright install chromium
+fi
+PYTHON="$VENV/bin/python3"
+"$PYTHON" -c "from playwright.sync_api import sync_playwright; from PIL import Image; print('visual-review: OK')"
+```
 
-2. **Check project venv** (if the project has one):
-   ```bash
-   ./venv/bin/python3 -c "from playwright.sync_api import sync_playwright; print('OK')"
-   ```
+This creates a persistent venv at `~/.local/share/visual-review/venv` with
+Playwright + Pillow. Chromium is stored in `~/.cache/ms-playwright/` and shared
+across all Playwright installations - if another project already installed it,
+this is a no-op. First-ever run on a fresh machine downloads ~150MB for
+Chromium.
 
-3. **Create a dedicated venv** (if neither exists):
-   ```bash
-   python3 -m venv ~/.local/share/visual-review/venv && \
-   ~/.local/share/visual-review/venv/bin/pip install playwright Pillow && \
-   ~/.local/share/visual-review/venv/bin/python3 -m playwright install chromium
-   ```
-
-Once resolved, use that Python path as `PYTHON` in all snippets below.
+**Use `$PYTHON` (resolved to `~/.local/share/visual-review/venv/bin/python3`)
+for all commands below.** Do not use bare `python3`, project venvs, or other
+Python paths for visual review work.
 
 ## Setup
 
-Before taking screenshots, determine three values:
+Before taking screenshots, determine two values:
 
-1. **PYTHON** - path to a Python with Playwright (see Dependencies above)
-2. **SITE_URL** - check project memory, CLAUDE.md, or ask. Common patterns:
+1. **SITE_URL** - check project memory, CLAUDE.md, or ask. Common patterns:
    `https://localhost`, `http://localhost:8000`, `http://localhost:3000`
-3. **OUTPUT_DIR** - use `output/` in the project root. Create if missing.
+2. **OUTPUT_DIR** - use `output/` in the project root. Create if missing.
 
 ## SSL / Self-Signed Certificates
 
@@ -67,7 +68,7 @@ page = browser.new_page(viewport={'width': 1440, 'height': 900}, ignore_https_er
 ### Single page - full + fold
 
 ```python
-PYTHON -c "
+$PYTHON -c "
 from playwright.sync_api import sync_playwright
 with sync_playwright() as p:
     browser = p.chromium.launch(args=['--ignore-certificate-errors'])
@@ -83,7 +84,7 @@ with sync_playwright() as p:
 ### Multi-page batch
 
 ```python
-PYTHON -c "
+$PYTHON -c "
 from playwright.sync_api import sync_playwright
 pages = {
     'homepage': 'SITE_URL/',
@@ -125,7 +126,7 @@ image to keep context manageable. Requires Pillow.
 **When NOT to use:** Single page review or debugging a specific section.
 
 ```python
-PYTHON -c "
+$PYTHON -c "
 from playwright.sync_api import sync_playwright
 from PIL import Image
 from pathlib import Path
@@ -249,9 +250,10 @@ For thorough reviews (not quick sanity checks), evaluate against:
 | Port 80 returns 404 | Server may only serve on 443. Switch to `https://` |
 | Timeout on `goto()` | Increase `timeout=30000`. Check server is running. |
 | Fonts differ from browser | Playwright uses its own Chromium. Minor differences expected. |
-| Pillow not available | Install in SparkForge or project venv, or use individual screenshots |
+| `ModuleNotFoundError: PIL` | Re-run the setup block - the venv may be corrupted. Delete and recreate: `rm -rf ~/.local/share/visual-review/venv` then re-run setup. |
+| `playwright._impl` browser error | Run `~/.local/share/visual-review/venv/bin/python3 -m playwright install chromium` to update the browser. |
 
-## Image Size Limit — CRITICAL
+## Image Size Limit - CRITICAL
 
 **NEVER create or read any image >= 2000px on either dimension.** Images at or
 above 2000px break the conversation context and kill the session. This applies
@@ -260,7 +262,7 @@ and any other image passed to the Read tool.
 
 Before reading any generated image, verify its dimensions. When generating:
 - Viewport screenshots: keep width <= 1440, height <= 1800
-- Contact sheets: cap grid to 1900×1900 max
+- Contact sheets: cap grid to 1900x1900 max
 - PDF page PNGs: render at a DPI/scale that keeps the longest side under 2000px
 - Before/after composites: resize each half so the combined image stays under 2000px
 
@@ -280,3 +282,4 @@ img.save('OUTPUT_DIR/page.png')
 - Do NOT use full-page screenshots in contact sheets - fold-only keeps the grid readable
 - Do NOT take screenshots without `wait_until='networkidle'` - partial renders mislead
 - Do NOT forget SSL flags for HTTPS dev servers - Playwright fails silently
+- Do NOT use bare `python3`, project venvs, or `/tmp` venvs for visual review - always use `~/.local/share/visual-review/venv/bin/python3`
