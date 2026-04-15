@@ -49,6 +49,7 @@ humanspark-standards/
 ├── docs/
 │   ├── rd-evidence-report.md                    - 12-repo, 1332-commit analysis (gitignored)
 │   ├── APPLYING-TO-EXISTING-PROJECTS.md         - Guide for retrofitting standards
+│   ├── CLAUDE-CODE-SETTINGS.md                  - Token efficiency configuration patterns
 │   └── plans/                                   - Implementation plans for this repo
 │
 └── reference/
@@ -123,6 +124,10 @@ Template gitignore covering Python artifacts, environment files, databases, and 
 ### Agents
 
 **code-reviewer:** Lightweight checklist with three severity levels (blocking / warning / note). Designed for solo-developer Python projects.
+
+## Token Efficiency
+
+Claude Code settings have a direct cost impact. Running the wrong model at the wrong effort level, or letting subagents inherit an expensive parent model, can double the token spend on a routine task. See [`docs/CLAUDE-CODE-SETTINGS.md`](docs/CLAUDE-CODE-SETTINGS.md) for the recommended user-level configuration (opusplan for model, Haiku for subagents, `claudeMdExcludes` for monorepos, build-artefact deny rules) with rationale for each setting and common pitfalls.
 
 ## Updating
 

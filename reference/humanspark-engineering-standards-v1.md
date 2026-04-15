@@ -379,6 +379,18 @@ Claude Code settings follow a 5-level precedence hierarchy. Higher levels overri
 
 **Evidence:** Derived from comparative analysis of permission patterns across Claude Code community best practices. The deny-first approach for network egress and destructive operations aligns with Rule 1.4 (security boundaries as constraints).
 
+### 7.9 Token efficiency configuration
+
+Settings 7.8 covers *safety* (what Claude may and may not do). This rule covers *cost* - which model runs where, which reads are worth their token weight, and which CLAUDE.md files should never load.
+
+**User-level settings** (`~/.claude/settings.json`) carry the cost-control levers: `model: "opusplan"` routes Opus to Plan Mode and Sonnet to execution, `env.CLAUDE_CODE_SUBAGENT_MODEL` pins delegation to Haiku 4.5, `env.BASH_MAX_OUTPUT_LENGTH` prevents truncation-driven re-runs, and `claudeMdExcludes` blocks stray `CLAUDE.md` loads from template or archive directories.
+
+**Project-level settings** (`.claude/settings.json`) carry build-artefact `permissions.deny` rules (`node_modules`, `dist`, `build`, `__pycache__`, `.venv`, `*.egg-info`) so exploratory reads cannot burn context on dependency code.
+
+Full configuration reference, per-setting rationale, and pitfalls: see `docs/CLAUDE-CODE-SETTINGS.md`.
+
+**Evidence:** `/context` inspection of live sessions showed Opus-high running on routine work with unset subagent override, and user-level CLAUDE.md running over its token budget. Build-artefact reads accounted for a disproportionate share of exploratory spend on three audited projects.
+
 ---
 
 ## 8. CLAUDE.md Template

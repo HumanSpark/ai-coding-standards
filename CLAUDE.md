@@ -70,8 +70,10 @@ No automated tests. Validate by running `./setup.sh --init --dry-run /tmp/test-p
 | project-template/docs/SPEC-TEMPLATE.md | Feature spec template (contract between intake and workplan skills) |
 | project-template/src/models.py | Starter shared types template |
 | project-template/src/config.py | Starter typed config template |
-| reference/humanspark-engineering-standards-v1.md | Master doc with evidence (Sections 1-12, Rules 7.7-7.8) |
+| reference/humanspark-engineering-standards-v1.md | Master doc with evidence (Sections 1-13, Rules 7.7-7.9) |
 | reference/humanspark-human-checklist.md | Human workflow checklist |
+| docs/CLAUDE-CODE-SETTINGS.md | Token-efficiency configuration: opusplan, subagent model, claudeMdExcludes, deny rules |
+| docs/APPLYING-TO-EXISTING-PROJECTS.md | Guide for retrofitting standards onto existing repos |
 | docs/rd-evidence-report.md | 12-repo, 1332-commit analysis (gitignored - local only) |
 
 ## Git Conventions
