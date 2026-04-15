@@ -30,6 +30,12 @@
       "Read(**/.env.shared)",
       "Read(**/secrets/**)",
       "Read(**/*credentials*)",
+      "Read(**/node_modules/**)",
+      "Read(**/dist/**)",
+      "Read(**/build/**)",
+      "Read(**/__pycache__/**)",
+      "Read(**/.venv/**)",
+      "Read(**/*.egg-info/**)",
       "Bash(curl *)",
       "Bash(wget *)",
       "Bash(rm -rf *)"
