@@ -54,8 +54,11 @@ Place in `~/.claude/settings.json`:
       "Read(**/dist/**)",
       "Read(**/build/**)",
       "Read(**/__pycache__/**)",
+      "Read(**/*.pyc)",
       "Read(**/.venv/**)",
-      "Read(**/*.egg-info/**)"
+      "Read(**/*.egg-info/**)",
+      "Read(**/.mypy_cache/**)",
+      "Read(**/.ruff_cache/**)"
     ]
   }
 }

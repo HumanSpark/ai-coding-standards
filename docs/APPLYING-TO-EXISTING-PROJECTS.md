@@ -77,7 +77,10 @@ cd ~/ai-coding-standards
 ```
 
 With no arguments, setup.sh auto-discovers all projects in the home
-directory that have a `.claude/` directory and syncs them all.
+directory that have a `.claude/` directory and syncs them all. To opt a
+directory out of auto-discovery (e.g. a writing workspace that has its
+own `.claude/skills/` but is not a Python project), create an empty
+`.claude/.nosync` sentinel file in that directory.
 
 ---
 

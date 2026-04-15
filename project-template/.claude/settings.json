@@ -34,8 +34,11 @@
       "Read(**/dist/**)",
       "Read(**/build/**)",
       "Read(**/__pycache__/**)",
+      "Read(**/*.pyc)",
       "Read(**/.venv/**)",
       "Read(**/*.egg-info/**)",
+      "Read(**/.mypy_cache/**)",
+      "Read(**/.ruff_cache/**)",
       "Bash(curl *)",
       "Bash(wget *)",
       "Bash(rm -rf *)"

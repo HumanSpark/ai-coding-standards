@@ -395,6 +395,9 @@ init_project() {
 }
 
 # --- Helper: discover all projects in home directory ---
+# Skips directories with .claude/.nosync (opt-out sentinel for workspaces
+# like ~/books/ that have their own .claude/ but are not Python projects
+# and should not receive the template's coding-oriented boilerplate).
 discover_projects() {
     local found=()
     for dir in "$HOME"/*/; do
@@ -403,6 +406,8 @@ discover_projects() {
         [ -d "$dir/.claude" ] || continue
         # Skip the standards repo itself
         [ "$(cd "$dir" && pwd)" = "$SCRIPT_DIR" ] && continue
+        # Skip if opted out via sentinel
+        [ -f "$dir/.claude/.nosync" ] && continue
         found+=("$(cd "$dir" && pwd)")
     done
     printf '%s\n' "${found[@]}"

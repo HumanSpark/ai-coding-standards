@@ -385,7 +385,7 @@ Settings 7.8 covers *safety* (what Claude may and may not do). This rule covers 
 
 **User-level settings** (`~/.claude/settings.json`) carry the cost-control levers: `model: "opusplan"` routes Opus to Plan Mode and Sonnet to execution, `env.CLAUDE_CODE_SUBAGENT_MODEL` pins delegation to Haiku 4.5, `env.BASH_MAX_OUTPUT_LENGTH` prevents truncation-driven re-runs, and `claudeMdExcludes` blocks stray `CLAUDE.md` loads from template or archive directories.
 
-**Project-level settings** (`.claude/settings.json`) carry build-artefact `permissions.deny` rules (`node_modules`, `dist`, `build`, `__pycache__`, `.venv`, `*.egg-info`) so exploratory reads cannot burn context on dependency code.
+**Project-level settings** (`.claude/settings.json`) carry build-artefact `permissions.deny` rules (`node_modules`, `dist`, `build`, `__pycache__`, `*.pyc`, `.venv`, `*.egg-info`, `.mypy_cache`, `.ruff_cache`) so exploratory reads cannot burn context on dependency code or linter caches.
 
 Full configuration reference, per-setting rationale, and pitfalls: see `docs/CLAUDE-CODE-SETTINGS.md`.
 
