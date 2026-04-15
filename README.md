@@ -14,7 +14,8 @@ humanspark-standards/
 ├── user-level/
 │   ├── CLAUDE.md                - Universal AI instructions (-> ~/.claude/CLAUDE.md)
 │   ├── rules/
-│   │   └── claude-md-discipline.md  - CLAUDE.md maintenance rules (-> ~/.claude/rules/)
+│   │   ├── claude-md-discipline.md     - CLAUDE.md maintenance rules (-> ~/.claude/rules/)
+│   │   └── development-discipline.md   - Session meta-rules: context decay, edit verification, sub-agents
 │   └── hooks/
 │       └── pre-commit           - Blocks secrets, sensitive filenames, personal emails
 │
