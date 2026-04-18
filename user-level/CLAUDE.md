@@ -1,4 +1,4 @@
-<!-- ~2350 tokens — budget: 3000 -->
+<!-- ~1050 tokens — budget: 2000 -->
 # HumanSpark AI Coding Instructions
 
 Standing instructions for all HumanSpark projects. Project-specific CLAUDE.md may override individual rules.
@@ -18,19 +18,30 @@ Senior software engineer and collaborative peer. Question decisions, flag gaps, 
 - Conventional commit prefixes: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`, `ux:`
 - Verb after prefix: `feat: add`, `fix: resolve`, `docs: update`, `refactor: extract`
 - NEVER include Co-Authored-By lines
-- Commit messages should be specific enough for an AI agent in a future session to understand what changed
-- **Pre-commit hook:** A user-level hook blocks commits containing sensitive
-  filenames, secrets in diffs, and personal email addresses. If a commit is
-  blocked, fix the issue - do not bypass with `--no-verify` unless explicitly
-  told to. Hook source: `user-level/hooks/pre-commit` in ai-coding-standards.
-- **R&D commits:** Prefix with `[R&D]` when work involves genuine technical
-  uncertainty - trying an approach where the outcome is unknown, comparing
-  alternatives, or benchmarking feasibility. When abandoning an approach, the
-  commit message MUST explain why (e.g., `[R&D] Revert live-query YTD - breaks
-  with incomplete historical data, switching to stored-value model`). Do NOT use
-  `[R&D]` for routine work: bug fixes, standard API integration, UI/CSS,
-  configuration, deployment, or anything solved on first attempt with known
-  techniques.
+- Commit messages specific enough for an AI agent in a future session to understand what changed
+- **Pre-commit hook:** A user-level hook blocks commits containing sensitive filenames, secrets in diffs, and personal email addresses. If blocked, fix the issue - do not bypass with `--no-verify` unless explicitly told to. Source: `user-level/hooks/pre-commit` in ai-coding-standards.
+- **R&D commits:** Prefix with `[R&D]` when work involves genuine technical uncertainty (unknown-outcome trials, benchmarks, alternative comparisons). When abandoning an approach, commit message MUST explain why. Do NOT use `[R&D]` for routine work.
+- **Before commit/push:** `git fetch` and verify local branch is not behind remote. Rebase or merge if behind.
+
+---
+
+## Mandatory Skills
+
+- **TDD:** `Skill(superpowers:test-driven-development)` - red-green-refactor for every new feature, bug fix, and refactor.
+- **Debug systematically:** `Skill(superpowers:systematic-debugging)` - diagnose before proposing a fix. No guess-and-patch.
+- **Verify before claiming done:** `Skill(superpowers:verification-before-completion)` - run the actual commands, confirm with evidence.
+- **Plan before multi-step work:** `Skill(superpowers:writing-plans)` for any task touching 3+ files or multiple coordinated changes.
+- **Visual changes:** Use `visual-review` skill (screenshots, html2png/pdf2png) before claiming rendered output is correct. Code inspection is not visual verification. Stage gate, not optional.
+- **Image size limit:** NEVER create or read images >= 2000px on either dimension - breaks conversation context. Resize with Pillow (`img.thumbnail((1900, 1900))`).
+
+---
+
+## Development Discipline
+
+- **Strict scope:** Fix exactly what the task specifies. No opportunistic refactoring or cleanup of adjacent code.
+- **Clean before refactoring:** On files over 300 lines, first remove dead code (unused imports, debug logs, commented-out blocks) in a separate commit before the real refactor.
+- **Abstraction:** No abstraction until code has been duplicated three times. Three similar lines is better than a premature abstraction.
+- **Composition over inheritance.** No deep inheritance trees.
 
 ---
 
@@ -43,164 +54,36 @@ Every code file. Adapt comment syntax per language.
 # Purpose: One concise sentence describing primary responsibility.
 # Project: ProjectName | Date: YYYY-MM-DD
 #
-# Overview: One paragraph - logic, major functions/classes,
-# data flow, dependencies, interactions with other modules.
+# Overview: One paragraph - logic, major functions/classes, data flow,
+# dependencies, interactions with other modules.
 ```
 
 ---
 
-## Development
+## Code Style (universal)
 
-- **TDD is mandatory.** Use `Skill(superpowers:test-driven-development)` and
-  execute its red-green-refactor workflow: write a failing test, run it to
-  confirm failure, write the minimum code to pass, run tests to confirm green,
-  then refactor. Do this for every new feature, bug fix, and refactoring.
-- **Debug systematically.** When encountering any bug, test failure, or
-  unexpected behaviour, use `Skill(superpowers:systematic-debugging)` and
-  execute its diagnostic workflow before proposing a fix. Do not guess-and-patch.
-- **Verify before claiming done.** Before asserting that work is complete or
-  tests pass, use `Skill(superpowers:verification-before-completion)` and
-  execute its verification steps. Run the actual commands, read the actual
-  output, confirm success with evidence. No claims without proof.
-- **Visual changes require visual verification.** Never claim a visual or
-  rendered output is correct without using available verification tools
-  (screenshots, visual-review skill, html2png/pdf2png pipelines). Code
-  inspection is not visual verification. If the change affects what a user
-  sees - HTML, CSS, templates, generated documents, rendered output - use
-  the visual review skill or equivalent before committing. This is a stage
-  gate, not optional.
-- **Image size limit for visual review.** NEVER create or read any image
-  >= 2000px on either dimension. Images at or above 2000px break the
-  conversation context. This applies to all screenshots, contact sheets,
-  PDF page extractions, and before/after comparisons. Resize with Pillow
-  (`img.thumbnail((1900, 1900))`) before reading if needed.
-- **Plan before multi-step work.** For any task involving 3+ files or multiple
-  coordinated changes, use `Skill(superpowers:writing-plans)` and produce a
-  written plan before touching code. Single-file changes don't need this.
-- **Strict scope.** Fix exactly what the task specifies. Do not
-  opportunistically refactor, reformat, or "clean up" adjacent code while
-  working on a task.
-- **Clean before refactoring.** Before any structural refactor on a file over
-  300 lines, first remove dead code: unused imports, unused functions, debug
-  logs, commented-out blocks. Commit this cleanup separately before starting
-  the real refactor. Dead code wastes context window tokens and makes diffs
-  harder to review.
-- **Session-level meta-rules** (context decay, edit verification, tool output
-  truncation, sub-agent discipline): `~/.claude/rules/development-discipline.md`.
-
----
-
-## Code Style
-
-- **Language:** Python default. Bash/Fish for shell. HTML/CSS/Jinja2 for templates. Avoid JS unless required.
+- **Language default:** Python. Bash/Fish for shell. HTML/CSS/Jinja2 for templates. Avoid JS unless required.
 - **CLI:** `argparse` with help text, epilog examples, sensible defaults, `--dry-run` for destructive ops.
 - **Error handling:** First draft, not follow-up. Every function doing I/O, network, or file ops.
-- **Error hints are mandatory.** Every raised exception must include a `hint` -
-  a human-friendly suggestion of what to check or do next. Write hints at the
-  raise site where you have most context.
-- **Type hints:** Mandatory on all public function signatures, method
-  signatures, and module boundaries. Use `from __future__ import annotations`
-  at the top of every Python file. Return types are not optional.
-- **Linting:** `ruff` is the standard linter and formatter. Run `ruff check`
-  and `ruff format` before committing. Configure in `pyproject.toml`.
-- **Dependencies:** Pin all dependencies with exact versions in
-  `requirements.txt` or `pyproject.toml`. Never use unpinned or `>=` ranges
-  in production. `pip freeze > requirements.txt` after adding any package.
-- **Comments:** WHY, not WHAT. Reasoning for non-obvious decisions. Never state the obvious.
-- **File size:** Propose extraction when approaching 300 lines. Do not keep adding features past this.
-- **Abstraction:** Do not abstract until code has been duplicated three times.
-  Three similar lines is better than a premature abstraction. Never build
-  generic factories or interfaces for a single use case.
-- **Naming:** Python filenames use underscores, never hyphens. All `.py` files, no exceptions.
-- **Commands:** Chain with `&&` on one line.
-- **Config extraction:** When moving hardcoded values to config, `grep -rn` the entire codebase for all references and update them in the same commit.
+- **Error hints:** Every raised exception must include a `hint`. Write hints at the raise site.
+- **Type hints:** Mandatory on all public signatures and module boundaries. `from __future__ import annotations` at top of every Python file.
+- **Linting:** `ruff check` and `ruff format` before committing.
+- **Dependencies:** Pin exact versions. Never `>=` ranges in production.
+- **Comments:** WHY, not WHAT.
+- **File size:** Propose extraction when approaching 300 lines.
+- **Naming:** Python filenames use underscores, never hyphens.
+- **Placeholders:** Mark ALL stubs with `TODO:`. `NOTE:` is informational only.
 
 ---
 
-## Module Design
+## Pointers
 
-For projects with 3+ source files. Full conventions in
-`.claude/skills/modular-design/SKILL.md`.
+Granular rules live in skills. Load them when working in the relevant area:
 
-**Five roles** (put code in the right place):
-- **Client** (`{service}_client.py`): Wraps one external service. All I/O lives here.
-- **Processor** (`{concern}.py`): Pure logic. No I/O. Dataclasses in, dataclasses out.
-- **Storage** (`db.py`): Persistence. Accepts/returns frozen dataclasses.
-- **Output** (`{type}_writer.py`): Generates deliverables.
-- **Entrypoint** (`cli.py`): Thin orchestrator. Only file importing multiple modules.
-
-**Four hard rules:**
-1. Processors have no I/O. If a test needs a mock, code is in the wrong layer.
-2. Pydantic at the edge only (in clients). Frozen dataclasses everywhere else.
-3. Modules raise exceptions. Entrypoint catches and decides.
-4. Composition over inheritance. No deep inheritance trees. Build complex
-   behaviour by combining simple, flat functions and classes.
-
-**Logging:** `logger = logging.getLogger(__name__)` in every module.
-`basicConfig()` in entrypoint only. No `print()` in modules.
-
----
-
-## Placeholders
-
-Mark ALL stubs, incomplete implementations, and mock data with `TODO:` comments.
-Mandatory. Distinguish `TODO:` (needs doing) from `NOTE:` (informational).
-
----
-
-## Security
-
-- **Sanitisation first:** Write the sanitisation layer before the feature that
-  consumes external data.
-- **Document constraints, not capabilities:** What the system CANNOT do -
-  read-only APIs, disallowed operations, rate/length limits.
-- **Never combine** unrestricted data access + untrusted content + autonomous
-  action in one component.
-- Full patterns (prompt injection defence, security testing order, defence in
-  depth, SafetyValve): `.claude/skills/security-hardening/SKILL.md`.
-
----
-
-## Testing
-
-- **Test counts:** Always include current count when updating CLAUDE.md.
-- **Default tier:** Tier 2 (tests alongside, same commit). User specifies
-  Tier 1 (tests first - security, protocols) or Tier 3 (gap-fill) when needed.
-- **Mocking:** `unittest.mock.patch` for all external services. Never hit
-  real APIs in unit tests.
-- Edge case checklist, tier details, protocol spec testing, prompt reliability
-  testing: `.claude/skills/testing-patterns/SKILL.md`.
-
----
-
-## Project Structure
-
-```
-project-name/
-├── src/projectname/     - Source (src layout for packages)
-├── tests/               - pytest tests
-│   └── fixtures/        - Test data (never real personal data)
-├── docs/                - Design specs and implementation plans
-├── scripts/             - Standalone utilities
-├── config/              - YAML/TOML configuration
-├── CLAUDE.md            - Project-specific AI context
-└── README.md            - Human documentation with ASCII project map
-```
-
-Flat layout acceptable for simpler single-purpose tools. When directory structure changes, update the ASCII project map in README.md.
-
-For modular projects (flat layout role mapping):
-```
-{service}_client.py   - External service wrapper (one per service)
-{concern}.py          - Processor (pure logic, no I/O)
-{type}_writer.py      - Output generation
-db.py                 - Persistence
-cli.py                - Entrypoint / orchestrator
-models.py             - Shared frozen dataclasses
-config.py             - Typed config with from_env()
-```
-
-For package layouts, see `.claude/skills/modular-design/SKILL.md`.
+- **Module Design** (5 roles, 4 hard rules, logging conventions): `.claude/skills/modular-design/SKILL.md`
+- **Security** (sanitisation-first, prompt injection defence, SafetyValve, constraint documentation): `.claude/skills/security-hardening/SKILL.md`
+- **Testing** (TDD tiers, edge case checklist, mocking conventions, protocol spec testing): `.claude/skills/testing-patterns/SKILL.md`
+- **Session meta-rules** (context decay, edit verification, tool truncation, sub-agent discipline): `~/.claude/rules/development-discipline.md`
 
 ---
 
@@ -216,19 +99,10 @@ For package layouts, see `.claude/skills/modular-design/SKILL.md`.
 
 ## Quality Standards
 
-- After any git history rewrite or secrets cleanup, audit ALL commit
-  messages, docs, and comments to ensure no references to the secret
-  or 'contains secrets' language remain.
-- When reporting project status, always verify claims by actually
-  checking file contents/timestamps - never report repos as 'up to
-  date' without diffing against the source of truth.
-- When refactoring, preserve lazy evaluation patterns
-  (generators/yields). Never replace `yield` with eager list
-  materialization without explicit approval.
-- For external API calls or tool integrations, verify parameters
-  against docs or existing config before implementing.
-- Before committing or pushing, `git fetch` and verify the local
-  branch is not behind remote. Rebase or merge if behind.
+- After any git history rewrite or secrets cleanup, audit ALL commit messages, docs, and comments for remaining references.
+- Verify project-status claims by checking file contents/timestamps. Never report "up to date" without diffing against source of truth.
+- Preserve lazy evaluation (generators/yields) when refactoring. Never eagerly materialise without explicit approval.
+- Verify API parameters against docs or existing config before implementing external calls.
 
 ---
 
