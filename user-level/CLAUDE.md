@@ -73,6 +73,7 @@ Every code file. Adapt comment syntax per language.
 - **File size:** Propose extraction when approaching 300 lines.
 - **Naming:** Python filenames use underscores, never hyphens.
 - **Placeholders:** Mark ALL stubs with `TODO:`. `NOTE:` is informational only.
+- **Stub justification:** Every stub, `TODO:`, task-register entry, or backlog note MUST include `Why:` and `Trigger:` (link to rejection / log / chat / commit) at creation. No Why = don't create the stub. Items missing Why + trigger during a sweep are candidates for immediate close. (Rule 4.9)
 
 ---
 
@@ -115,3 +116,4 @@ Granular rules live in skills. Load them when working in the relevant area:
 - Let files grow past 300 lines without extracting
 - Write happy-path-only tests
 - Ship unmarked stubs or placeholders
+- Create stubs, TODOs, or backlog items without a `Why:` and `Trigger:` line

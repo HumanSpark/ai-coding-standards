@@ -190,6 +190,37 @@ def get_user_profile(user_id):
 
 Run `grep -rn "TODO:" src/` before any release to verify nothing was left unfinished. Clearly distinguish between `TODO:` (needs doing) and `NOTE:` (informational context for future developers).
 
+### 4.9 Every stub, TODO, and backlog item requires Why + trigger
+
+A stub without a recorded *why* is a todo that has already decayed. Three days later the trigger context is gone, the item becomes unactionable, and the backlog accumulates items nobody can justify or close. This applies to code stubs (`TODO:` comments), task-register entries, memory notes, and spec placeholders equally.
+
+Every stub MUST include two lines at creation time:
+
+```markdown
+# image-dpi-gate
+
+**Why:** KDP rejected [book X] on [date] for sub-300 DPI images. Need automated catch before upload.
+**Trigger:** [link to rejection email / build log / chat / commit]
+
+[rest of stub]
+```
+
+Code-comment form:
+
+```python
+# TODO: Replace with real API call
+# Why: mock data returned here broke integration test X on 2026-04-15
+# Trigger: https://forge.humanspark.ai/.../issues/42
+def get_user_profile(user_id):
+    ...
+```
+
+If you cannot write the Why at creation time, do not create the stub. That inability is a strong signal you are capturing noise, not a real item. Items that resurface with context can be recreated properly; items that never resurface were correctly identified as noise by being dropped.
+
+**AI-Rationale:** LLMs are happy to accumulate backlog indefinitely because each individual stub looks cheap. The cost shows up later as an unactionable register that the user cannot triage. Forcing Why + trigger at creation time raises the bar just enough to filter noise while preserving every real item, and makes stale items mechanically identifiable (missing trigger link = candidate for close).
+
+Backlog hygiene: any stub or task-register item missing Why + trigger is a candidate for immediate close during a sweep. If the underlying problem is real, it will resurface with context.
+
 ---
 
 ## 5. Security Standards

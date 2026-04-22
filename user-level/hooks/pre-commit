@@ -89,6 +89,86 @@ if [[ -n "$staged_files" ]]; then
     fi
 fi
 
+# --- 4. Stub justification (Rule 4.9): Why + Trigger required ---
+#
+# Any newly-added spec in docs/plans/*.md, or any newly-added TODO/STUB code
+# comment, must carry a "Why" and "Trigger" line. Blocks stubs that would
+# decay into unactionable backlog. Matches Rule 4.9 in the engineering
+# standards reference doc.
+
+# 4a: Spec files in docs/plans/ must contain Why + Trigger sections.
+new_spec_files=$(git diff --cached --name-only --diff-filter=A 2>/dev/null | grep -E '^docs/plans/.+\.md$' | grep -v -E '(SPEC-TEMPLATE|\.gitkeep)' || true)
+
+if [[ -n "$new_spec_files" ]]; then
+    while IFS= read -r spec_file; do
+        [[ -z "$spec_file" ]] && continue
+        content=$(git show ":$spec_file" 2>/dev/null || true)
+        if ! echo "$content" | grep -qiE '(^|\*\*)Why[: ]'; then
+            echo -e "${RED}BLOCKED: Spec missing 'Why:' line (Rule 4.9): $spec_file${NC}"
+            errors=$((errors + 1))
+        fi
+        if ! echo "$content" | grep -qiE '(^|\*\*)Trigger[: ]'; then
+            echo -e "${RED}BLOCKED: Spec missing 'Trigger:' line (Rule 4.9): $spec_file${NC}"
+            errors=$((errors + 1))
+        fi
+    done <<< "$new_spec_files"
+fi
+
+# 4b: New TODO/STUB comments in added lines must have Why + Trigger on nearby lines.
+# Scan added lines for TODO:/STUB:/FIXME: markers; for each, check the next 4
+# added lines in the same hunk for Why and Trigger. Uses a Python helper for
+# the windowed check (bash line-proximity in unified diff is fragile).
+if [[ -n "$diff_output" ]]; then
+    stub_report=$(python3 - <<'PY' 2>/dev/null || true
+import re, subprocess, sys
+
+diff = subprocess.run(
+    ["git", "diff", "--cached", "--diff-filter=ACMR", "-U0"],
+    capture_output=True, text=True, check=False,
+).stdout
+
+markers = re.compile(r'(TODO|STUB|FIXME)\s*:', re.I)
+skip_paths = re.compile(r'(^|/)(tests?|fixtures?)/|/node_modules/|reference/humanspark-engineering-standards-v1\.md$|user-level/hooks/pre-commit$|^CLAUDE\.md$|user-level/CLAUDE\.md$|project-template/CLAUDE\.md$|docs/SPEC-TEMPLATE\.md$|docs/MODULE-README-TEMPLATE\.md$')
+
+current_file = None
+added = []
+violations = []
+
+def flush(added_lines):
+    for i, line in enumerate(added_lines):
+        if markers.search(line):
+            window = "\n".join(added_lines[i:i+5])
+            if not re.search(r'Why\s*:', window, re.I) or not re.search(r'Trigger\s*:', window, re.I):
+                violations.append((current_file, line.strip()[:120]))
+
+for raw in diff.splitlines():
+    if raw.startswith("+++ b/"):
+        flush(added)
+        added = []
+        current_file = raw[6:]
+        continue
+    if raw.startswith("diff --git") or raw.startswith("@@"):
+        flush(added)
+        added = []
+        continue
+    if raw.startswith("+") and not raw.startswith("+++"):
+        added.append(raw[1:])
+
+flush(added)
+
+for path, snippet in violations:
+    if path and skip_paths.search(path):
+        continue
+    print(f"{path}\t{snippet}")
+PY
+)
+    if [[ -n "$stub_report" ]]; then
+        echo -e "${RED}BLOCKED: TODO/STUB/FIXME without 'Why:' + 'Trigger:' nearby (Rule 4.9):${NC}"
+        echo "$stub_report" | head -10 | sed 's/^/  /'
+        errors=$((errors + 1))
+    fi
+fi
+
 # --- Summary ---
 if [[ $errors -gt 0 ]]; then
     echo ""

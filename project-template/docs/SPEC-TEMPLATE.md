@@ -3,6 +3,13 @@
 **Date:** {YYYY-MM-DD}
 **Project:** {project name}
 
+**Why:** {One sentence on why this exists. What problem is it solving, what
+broke, what did a human/customer/stakeholder ask for. Required by Rule 4.9.}
+
+**Trigger:** {Link to the source: rejection email, incident, build log,
+chat message, commit, or issue. Required by Rule 4.9. Pre-commit hook
+blocks specs missing this line.}
+
 ## Goal
 
 {What and why. One paragraph.}
