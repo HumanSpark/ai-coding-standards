@@ -1009,6 +1009,7 @@ Each rule in this document traces back to specific evidence. This appendix maps 
 | The "first code review" checkpoint | Scott Hay LinkedIn analysis (this session) |
 | Formalised file header format | AI Coding Standards doc (Alastair, 2025) - concrete format vs vague description |
 | TODO/stub marking convention | AI Coding Standards doc - greppable paper trail for incomplete AI work |
+| Stub Why + Trigger required (4.9) | Session observation 2026-04-22: three-day-old stubs (sparkcore A4, image-DPI gate, running-header gate) became unactionable after trigger context was lost. Stricter creation bar > better memory. Enforced by user-level pre-commit hook scanning docs/plans/*.md and new TODO/STUB/FIXME comments. |
 | Edge case testing checklist | AI Coding Standards doc + spark SafetyValve semicolon/ampersand bug |
 | README ASCII project map | AI Coding Standards doc - human onboarding complement to CLAUDE.md key files table |
 | Three-tier testing discipline | All repos: feat-then-test commit pattern + spark prompt suite (test-first, fewer fixes) + clearmail SDET audit (gap-fill) |

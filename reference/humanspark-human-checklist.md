@@ -45,6 +45,7 @@ This checklist captures what YOU do - the decisions, habits, and discipline that
 - [ ] **Update CLAUDE.md.** Add a numbered entry to the evolution history. Update test count. Add new files to the key files table. Add any new gotchas. (Rule 7.4)
 - [ ] **Update README project map.** If directory structure changed, update the ASCII tree. (Rule 2.6)
 - [ ] **Check for TODOs.** Run `grep -rn "TODO:" src/` and verify nothing was left unfinished by Claude Code. (Rule 4.8)
+- [ ] **Check every TODO/stub carries Why + Trigger.** Run `grep -rn -E "TODO|STUB|FIXME" src/ docs/plans/` and confirm each match has a nearby `Why:` and `Trigger:` line. Items without them are candidates for immediate close. The pre-commit hook blocks newly-added violations; this sweep catches pre-existing ones. (Rule 4.9)
 - [ ] **Track test count.** Did it go up? If it went down, something was removed - investigate. (Rule 6.1)
 
 ---
